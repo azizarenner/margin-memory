@@ -1,0 +1,14 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "margin-memory-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = ["fastapi==0.143.0", "pydantic==2.14.1", "sqlalchemy==2.1.4", "alembic==1.20.0", "openai==3.29.0", "uvicorn==0.54.0", "psycopg[binary]==3.3.6", "pydantic-settings==2.15.0"]
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "httpx==0.28.1", "PyYAML>=6,<7"]
+[tool.setuptools.packages.find]
+include = ["app*"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
