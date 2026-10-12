@@ -1,6 +1,6 @@
 # Margin Memory
 
-A personal semantic memory for the words you meet while reading.
+AI-powered personal semantic memory for language learning, combining knowledge graphs, contextual vocabulary capture, and agentic AI to turn unfamiliar words into active vocabulary.
 
 Reading in another language should not mean choosing between staying with a
 story and remembering new vocabulary. Margin Memory combines a quiet reading
