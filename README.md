@@ -1,0 +1,195 @@
+# Margin Memory
+
+A personal semantic memory for the words you meet while reading.
+
+Reading in another language should not mean choosing between staying with a
+story and remembering new vocabulary. Margin Memory combines a quiet reading
+timer, fast word capture, and contextual explanations with a durable record of
+where each word was encountered. English → Russian is the first supported pair.
+
+**Status: milestone 1, local single-user MVP.** This is a functional application,
+not a hosted service. See [verification](docs/verification.md) for checks actually
+run and current limits. GraphRAG, personalized learning and a production OKF
+exporter are future work.
+
+## What is implemented
+
+- Responsive reading room with source creation/selection and 1–240 minute sessions.
+- Deadline-based timer restored from the API on reload; no claims of blocking other phone apps.
+- Text capture and opt-in browser speech recognition, with an always-available text fallback.
+- Capture committed before enrichment; failures remain saved and can be retried.
+- OpenAI structured-output adapter and deterministic, credential-free mock provider.
+- Saved encounters with definitions, translations, candidate meanings, context and source.
+- Lexemes separated from senses, multilingual translation records, typed relationship schema.
+- Alembic migrations, backend integration tests, frontend tests, CI and synthetic OKF examples.
+
+Mock mode knows **mitigate, alleviate, exacerbate, yield**. Unknown words are saved
+as unresolved with no fabricated definition. Mock mode does not disambiguate
+context. It demonstrates the complete persistence flow without paid credentials.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Reader[Next.js reading room] --> Proxy[Same-origin API proxy]
+  Proxy --> API[FastAPI]
+  API --> Capture[Persist occurrence and encounter event]
+  Capture --> DB[(PostgreSQL)]
+  Capture --> Enrich[Enrichment service]
+  Enrich --> Provider{Provider interface}
+  Provider --> Mock[Deterministic mock]
+  Provider --> OpenAI[OpenAI structured output]
+  Enrich --> Validate[Pydantic validation]
+  Validate --> DB
+  DB -. planned curated export .-> OKF[OKF knowledge bundle]
+```
+
+The frontend never holds the OpenAI key. Shared lexical records are separate from
+private occurrences. Candidate synonyms are not automatically promoted to graph
+edges. More: [architecture](docs/architecture.md), [schema](docs/data-model.md).
+
+## Stack
+
+Next.js 16.4, React 19.3, TypeScript 7, Tailwind 4.3; Python 3.12+, FastAPI 0.143,
+Pydantic 2.14, SQLAlchemy 2.1, Alembic 1.20, PostgreSQL 17 and OpenAI Python SDK
+3.29. Direct versions were checked against package registries on 2026-10-12.
+The frontend has a pnpm lockfile. Backend direct dependencies are pinned;
+transitive Python dependencies are not yet locked across platforms.
+
+## Run with Docker Compose
+
+Prerequisites: Docker Engine or Docker Desktop with Compose v2.
+
+```sh
+cp .env.example .env
+# Set POSTGRES_PASSWORD in .env to a local-only alphanumeric password.
+docker compose up --build
+```
+
+Open [the reading room](http://localhost:3000). API documentation is at
+[localhost:8000/docs](http://localhost:8000/docs). Migrations run when the API
+container starts. PostgreSQL data survives normal restarts in a named volume.
+`docker compose down` stops the app; adding `-v` deletes its database volume.
+Docker execution was not available in the initial development environment.
+
+## Run without Docker
+
+For quick development, SQLite is supported as a convenience database. PostgreSQL
+is the intended deployment database; CI includes a separate PostgreSQL test run.
+Use Python 3.12+ and Node 22+ with pnpm 11.25.0.
+
+From the repository root:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -e 'services/api[dev]'
+cd services/api
+alembic upgrade head
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+In another terminal, from the repository root:
+
+```sh
+cd apps/web
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+The development command uses Webpack with polling for compatibility with restricted macOS file watchers. The production build uses Next.js defaults.
+
+The API defaults to an ignored `services/api/memory.db` file. For an existing
+PostgreSQL database, export `DATABASE_URL=postgresql+psycopg://...` before both
+Alembic and Uvicorn. Never put real connection credentials in documentation.
+
+1. Add a source such as “An invented journey”.
+2. Select 15 minutes and begin reading.
+3. Capture `mitigate`, optionally adding a synthetic sentence.
+4. Try `yield` to see separate possible meanings.
+5. Open **Your words** to see durable encounters; repeat a word to preserve its
+   new context without duplicating an identical lexical sense.
+
+## Configuration
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `POSTGRES_PASSWORD` | Compose local database password; alphanumeric avoids URL escaping | Required in Compose |
+| `DATABASE_URL` | API SQLAlchemy connection URL | Local SQLite |
+| `AI_PROVIDER` | `mock` or `openai` | `mock` |
+| `OPENAI_API_KEY` | Server-side API credential | Empty |
+| `OPENAI_MODEL` | Structured-output-capable model available to your account | `gpt-4o-mini` |
+| `API_INTERNAL_URL` | Next.js build-time API proxy destination | `http://127.0.0.1:8000` |
+
+For real enrichment, set `AI_PROVIDER=openai` and `OPENAI_API_KEY` in the root
+`.env` for Compose, then recreate the API container. For non-Docker development,
+export these variables in the API terminal or place them in an ignored
+`services/api/.env`. The root `.env` is not automatically loaded by that command.
+Only the captured text and optional context are sent to OpenAI; source titles and
+reading history are not sent. `store=False` is requested. Provider data policies
+still apply. No live paid API call was made during initial verification.
+
+Speech recognition starts only on a button tap and stops after a result or error.
+Availability depends on browser, secure context and microphone permission; a
+browser may send audio to its own speech service. Mobile layout does not imply
+that a phone can reach this loopback-only development server. Use a secured,
+authenticated deployment or carefully configured private development tunnel for
+phone testing. There is no continuous microphone recording.
+
+## Tests
+
+```sh
+# Activated Python environment, from services/api:
+pytest -q
+alembic check
+
+# From apps/web:
+pnpm test
+pnpm build
+pnpm typecheck
+```
+
+Integration tests apply and roll back the real migration. To run them against
+PostgreSQL, set `TEST_DATABASE_URL` to a **dedicated disposable test database**;
+the fixture downgrades it to base after each test. Never point tests at your
+reading database. GitHub Actions runs both SQLite and PostgreSQL tests, frontend
+tests, the production build, and TypeScript checks after publication.
+
+## Data and privacy boundaries
+
+This version uses one seeded local reader and has **no login or public-deployment
+security**. Compose binds app ports to loopback and does not publish the database
+port. Public deployment requires authentication, authorization on every query,
+CSRF/origin protections as appropriate, rate limits, secret management, TLS,
+backup/restore testing, deletion/export controls and database hardening.
+
+The repository contains synthetic examples only. `.env`, database files, caches
+and installed dependencies are ignored. Review staged files before publication.
+Open-source code publication is separate from exposing a running application.
+
+## Repository guide
+
+- `apps/web/`: reading interface, browser voice adapter, API proxy and frontend tests.
+- `services/api/`: API routes, schemas, models, provider adapters, migrations and tests.
+- `knowledge/okf/`: synthetic OKF v0.2 bundle; not a private database export.
+- `docs/`: architecture, schema, roadmap, evaluation and publication instructions.
+- `.github/workflows/ci.yml`: automated SQLite/PostgreSQL and frontend checks.
+- `AGENTS.md`: conventions for future contributions.
+
+## Next milestones
+
+See [roadmap](docs/roadmap.md). Planned work includes reviewed sense linking,
+curated OKF export, pgvector-backed hybrid retrieval, bounded GraphRAG, Google
+ADK tools, vocabulary activation exercises, predictive retention models, reading
+recommendations and BigQuery Graph experiments. None are claimed as implemented.
+
+[Evaluation plan](docs/evaluation-plan.md) defines translation/disambiguation
+quality, latency, data integrity and eventual learning-outcome measures.
+[Publication steps](docs/publication.md) cover creating the GitHub repository.
+
+## References and license
+
+- [OpenAI structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs): structured response validation used by the adapter.
+- [Canonical OKF specification](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md): v0.2 reviewed before producing the sample bundle.
+
+MIT licensed. Contributions should include focused tests and honest documentation.
