@@ -1,4 +1,44 @@
-# Verification record — 2026-10-12
+# Docker verification — 2026-10-13
+
+## Passed in the local Docker environment
+
+- Docker Desktop 4.95.0, Engine 29.8.2 and Compose 5.6.0 on Apple Silicon.
+- API image uses Python 3.12; frontend image uses Node 22. Host Python 3.15
+  and Node 24 do not need to supply application dependencies.
+- Built both images and launched PostgreSQL 17, API and web services in mock mode.
+- Alembic migration at `1c9e15622078` (head); schema drift check passed.
+- API reports PostgreSQL as its active database dialect.
+- 9 backend tests passed against SQLite; the same 9 passed against a dedicated
+  `margin_memory_test` PostgreSQL database, separate from application data.
+- 4 frontend tests passed inside the frontend image.
+- Standalone TypeScript check and production Next.js build passed inside Docker.
+- Browser journey passed: created a synthetic reading source, started a 15-minute
+  session, captured `mitigate` with an original synthetic sentence, received an
+  English definition and Russian translation, then reloaded and restored both
+  the continuing timer and saved encounter.
+- Direct PostgreSQL query confirmed the saved enriched occurrence. It remained
+  present after all application containers were recreated with health checks.
+- `./scripts/dev.sh` built and started the stack and waited for all three services
+  to become healthy; the page and proxied API health endpoint respond successfully.
+- Private `.env` created with a random 256-bit hexadecimal database password and
+  owner-only permissions. No real OpenAI credentials are configured or required.
+
+## Remaining limits
+
+Live OpenAI enrichment, real microphone recognition, actual iOS/Android
+backgrounding and concurrent multi-user operation remain unverified. No public
+application was deployed. Authentication, offline capture, a graph view, curated
+OKF export, vector retrieval, GraphRAG, ADK and predictive learning remain future
+milestones. This work verifies the local MVP, not production readiness.
+
+GitHub publication and CI outcomes are recorded in `publication.md` after the
+remote operation. Existing SQLite data was left untouched; the running app now
+uses its separate PostgreSQL volume. Synthetic browser verification records stay
+only in that local database. The Docker services are intentionally left running.
+
+---
+
+# Historical verification — 2026-10-12
 
 ## Passed locally
 

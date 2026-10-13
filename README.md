@@ -58,30 +58,61 @@ transitive Python dependencies are not yet locked across platforms.
 
 ## Run with Docker Compose
 
-Prerequisites: Docker Engine or Docker Desktop with Compose v2.
+Prerequisites: start Docker Desktop (or Docker Engine with Compose v2+).
+On a fresh checkout, Python 3 is used only to generate a private `.env` file using
+the standard library. Application Python and Node run inside containers.
 
 ```sh
-cp .env.example .env
-# Set POSTGRES_PASSWORD in .env to a local-only alphanumeric password.
-docker compose up --build
+./scripts/dev.sh
 ```
 
-Open [the reading room](http://localhost:3000). API documentation is at
-[localhost:8000/docs](http://localhost:8000/docs). Migrations run when the API
-container starts. PostgreSQL data survives normal restarts in a named volume.
-`docker compose down` stops the app; adding `-v` deletes its database volume.
-Docker execution was not available in the initial development environment.
+The helper locates Docker Desktop on macOS even when `docker` is absent from your
+shell PATH, creates `.env` with a cryptographically random database password if
+needed, builds the images, applies migrations, and waits for healthy services.
+It never replaces an existing `.env` or displays the password. Mock AI mode is the
+default. Open [the reading room](http://localhost:3000) and
+[API documentation](http://localhost:8000/docs).
+
+```sh
+./scripts/dev.sh status  # service health
+./scripts/dev.sh logs    # recent logs, then follow; Ctrl-C stops following
+./scripts/dev.sh stop    # stop the app, retaining its data
+./scripts/dev.sh         # start it again
+```
+
+Equivalent direct setup, if `docker` is already on PATH:
+
+```sh
+python3 scripts/setup-env.py
+docker compose up -d --build --wait
+```
+
+PostgreSQL data lives in a named Docker volume and survives container recreation.
+Do not change the existing database password by editing `.env` alone: PostgreSQL
+initializes its password only when the volume is first created. Stop normally
+with the helper or `docker compose down`; `docker compose down -v` deletes data.
+The services use `restart: unless-stopped`, so they resume when Docker starts
+unless you explicitly stopped them. Docker Desktop itself must be running.
+
+The full Docker setup was verified on Apple Silicon with PostgreSQL 17, Python
+3.12 and Node 22. The installed host Python 3.15 is not used for API dependencies;
+those have not been verified against 3.15. Host Node 24 is also unnecessary for
+the Docker route. API and web ports bind only to loopback; the database has no
+host-published port. This is local development, not a production deployment.
 
 ## Run without Docker
 
 For quick development, SQLite is supported as a convenience database. PostgreSQL
 is the intended deployment database; CI includes a separate PostgreSQL test run.
-Use Python 3.12+ and Node 22+ with pnpm 11.25.0.
+Use Python 3.12 (the verified version) and Node 22+ with pnpm 11.25.0.
+If `python3 --version` reports 3.15, use Docker or explicitly install/select
+Python 3.12 for this optional native route; do not reuse a virtual environment
+created with another Python version.
 
 From the repository root:
 
 ```sh
-python3 -m venv .venv
+python3.12 -m venv .venv
 . .venv/bin/activate
 pip install -e 'services/api[dev]'
 cd services/api
@@ -152,7 +183,7 @@ pnpm typecheck
 Integration tests apply and roll back the real migration. To run them against
 PostgreSQL, set `TEST_DATABASE_URL` to a **dedicated disposable test database**;
 the fixture downgrades it to base after each test. Never point tests at your
-reading database. GitHub Actions runs both SQLite and PostgreSQL tests, frontend
+reading database. The workflow is configured to run both SQLite and PostgreSQL tests, frontend
 tests, the production build, and TypeScript checks after publication.
 
 ## Data and privacy boundaries
@@ -185,7 +216,9 @@ recommendations and BigQuery Graph experiments. None are claimed as implemented.
 
 [Evaluation plan](docs/evaluation-plan.md) defines translation/disambiguation
 quality, latency, data integrity and eventual learning-outcome measures.
-[Publication steps](docs/publication.md) cover creating the GitHub repository.
+[Publication notes](docs/publication.md) describe the preserved Git histories and source-only publication.
+
+Repository: [azizarenner/margin-memory](https://github.com/azizarenner/margin-memory).
 
 ## References and license
 

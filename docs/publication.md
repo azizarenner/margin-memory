@@ -1,31 +1,37 @@
-# GitHub publication
+# GitHub source publication
 
-The GitHub connector was authenticated during implementation, but it exposed no
-repository-creation operation, and the GitHub CLI was not installed. No remote
-repository was created or pushed. Local Git commits use a generic contributor
-identity to avoid publishing personal metadata inadvertently.
+Repository: https://github.com/azizarenner/margin-memory
 
-After installing GitHub CLI and authenticating, run from this repository root:
+The remote already contained an initial commit (`bb882b6`) with a README, MIT
+license and Python gitignore. The local MVP had three commits. Both histories
+were preserved by a merge commit (`2c4d690`), without rebasing or force-pushing.
+The merged files retain the remote project description and original copyright
+notice, the local implementation and documentation, and both sets of useful
+ignore rules. Frontend source paths are explicitly exempted from the Python
+`lib/` ignore rule.
+
+The owner completed GitHub CLI browser authentication. Local Git uses that
+credential helper for this repository only. No credentials are tracked, and
+container data stays in a local volume. Publishing source code does not expose
+the locally running app.
+
+The initial 2026-10-12 publication was not performed because local Git
+credentials were unavailable. The 2026-10-13 follow-up prepares a normal
+fast-forward push after local Docker checks and a secret review. Final remote
+and Actions outcomes are verified separately after pushing.
+
+For later changes, inspect and test them before a normal push:
 
 ```sh
-gh auth login
 git status --short
-git ls-files
-# Inspect the list and staged content; .env and runtime databases must be absent.
-gh repo create margin-memory --public --source=. --remote=origin --push
+git diff
+git fetch origin
+git log --oneline --graph --all -10
+# Commit only reviewed source and documentation, then:
+git push origin main
 ```
 
-If the repository name already exists, inspect it before setting a remote or
-pushing. Do not overwrite an existing history. Alternatively create an empty
-public repository in GitHub's web UI (without an auto-generated README), then:
-
-```sh
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/margin-memory.git
-git push -u origin main
-```
-
-Initial checks examine tracked content for common credential patterns and
-personal-data strings. This is a useful review, not a guarantee that future
-changes cannot leak data. Enable GitHub secret scanning, branch protections and
-dependency updates when the remote exists. CI status cannot be claimed before
-Actions has actually run.
+If a push is rejected because the remote changed, fetch and inspect it. Merge the
+new commits rather than overwriting the remote. Never commit `.env`, runtime
+databases, personal reading history or credentials. Keep authentication and all
+production-hardening work separate from this local-development milestone.
