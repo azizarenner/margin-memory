@@ -40,7 +40,7 @@ def require_sense(db, id):
     return sense
 
 @router.get('')
-def graph(limit: int = Query(500, ge=1, le=1000), db: Session = Depends(get_db)):
+def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, db: Session = Depends(get_db)):
     rows = list(db.execute(select(Sense, Lexeme).join(Lexeme).where(Sense.id.in_(visible_senses()))
         .order_by(Sense.id).limit(limit + 1)))
     truncated = len(rows) > limit
@@ -118,6 +118,10 @@ def graph(limit: int = Query(500, ge=1, le=1000), db: Session = Depends(get_db))
                 getattr(r,'evidence','Legacy relationship'),r.provenance,getattr(r,'confidence',None)))
     from .atlas_suggestions import suggest
     suggestions=[] if truncated else suggest(db,rows,occurrences[:2000],LOCAL_USER)
+    if memory:
+        from .learning import summaries
+        for id,evidence in summaries(db,[s.id for s,_ in rows]).items():
+            nodes[id]['learning']=evidence
     return dict(dataset='personal',suggestions=suggestions,nodes=list(nodes.values()),edges=list(edges.values()),
         truncated=truncated,history_truncated=history_truncated,
         notice='Private local graph. Candidate senses are not demonstrated knowledge. No recall probabilities are estimated.')

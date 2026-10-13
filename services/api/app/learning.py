@@ -159,9 +159,17 @@ def answer(id:UUID,data:Answer,db:Session=Depends(get_db)):
     db.commit();return result(event)
 
 def summary(db,sense_id):
-    dimensions={kind:dict(attempts=0,correct=0,incorrect=0,uncertain=0,disputed=0,assisted=0,observed=False) for kind in ('recognition','recall')}
-    rows=list(db.scalars(select(Observation).where(Observation.user_id==LOCAL_USER,Observation.sense_id==str(sense_id))))
+    return summaries(db,[str(sense_id)])[str(sense_id)]
+
+def summaries(db,sense_ids):
+    rows=list(db.scalars(select(Observation).where(Observation.user_id==LOCAL_USER,Observation.sense_id.in_(sense_ids))))
     flags=flags_for(db,[r.id for r in rows])
+    grouped={id:[] for id in sense_ids}
+    for row in rows: grouped[row.sense_id].append(row)
+    return {id:summarize(items,flags) for id,items in grouped.items()}
+
+def summarize(rows,flags):
+    dimensions={kind:dict(attempts=0,correct=0,incorrect=0,uncertain=0,disputed=0,assisted=0,observed=False) for kind in ('recognition','recall')}
     skipped=0
     for row in rows:
         if row.kind=='REVIEW_SKIPPED': skipped+=1;continue

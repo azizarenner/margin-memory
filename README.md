@@ -273,6 +273,13 @@ Open-source code publication is separate from exposing a running application.
 - `.github/workflows/ci.yml`: automated SQLite/PostgreSQL and frontend checks.
 - `AGENTS.md`: conventions for future contributions.
 
+## Atlas Memory view
+
+The Atlas now includes a **Memory** view for personal vocabulary. Choose recognition
+or definition-cued recall coloring and filter by observed success, disputed checks,
+or no assessment attempts. Categories overlap; missing evidence is not a deficit.
+See [Memory view semantics](docs/memory-atlas.md). No predicted mastery is displayed.
+
 ## Next milestones
 
 See [roadmap](docs/roadmap.md). Planned work includes reviewed sense linking,

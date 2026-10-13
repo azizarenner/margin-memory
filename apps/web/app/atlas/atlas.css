@@ -28,3 +28,7 @@
 /* Keep interpretation beside the graph, including on narrow screens. */
 .atlas-guide{position:absolute;top:72px;left:20px;right:20px;z-index:3;font:10px/1.5 monospace;color:#bbc3ab}.atlas-guide button{margin-left:12px;font-size:10px}.atlas-guide p{margin:7px 0 3px;max-width:560px}.atlas-guide small{color:#8c9881}.atlas-canvas,.atlas-glow{top:195px;height:auto}.atlas-name-controls{top:166px}.atlas-suggestion{border:1px solid #34412c;padding:12px;margin:12px 0}.atlas-suggestion h3{margin-top:0}.atlas-suggestion .atlas-inline{margin-top:12px;flex-wrap:wrap}.atlas-sidebar select{width:100%}
 @media(max-width:800px){.atlas-guide{font-size:9px}.atlas-guide button{font-size:9px;margin-left:8px}.atlas-canvas,.atlas-glow{top:205px;height:calc(100% - 335px)}.atlas-name-controls{top:180px}}
+.atlas-memory-controls{position:relative;margin:14px 0;padding:14px;background:rgba(14,19,26,.95);border:1px solid #35404d;border-radius:8px;font-size:12px;color:#d5dce5;overflow:auto}
+.atlas-memory-controls label{display:block;margin:6px 0}
+.atlas-memory-controls select{width:100%;background:#17202b;color:#e3e9ef;padding:6px;border:1px solid #465261}
+.atlas-memory-controls p{margin:8px 0;line-height:1.4}

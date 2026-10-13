@@ -7,8 +7,10 @@ recognition and definition-cued recall; conservative local grading with abstenti
 separate recognition/recall summaries in Atlas details. See
 [the evidence model and evaluation protocol](learning-evidence.md).
 
+Implemented next: synthetic grading regression fixtures, conservative distractor
+guards, private dispute history, and an Atlas Memory view of observed evidence.
 Next: independently adjudicated recall-grading fixtures and cue/distractor quality
-review. Contextual production, calibrated FSRS estimates, richer Memory/Evolution
+review. Contextual production, calibrated FSRS estimates, longitudinal Evolution
 views and exposure-aware practice ranking remain unimplemented research stages.
 
 ## Milestone 1 — local reading companion

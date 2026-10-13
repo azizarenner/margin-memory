@@ -1,3 +1,19 @@
+# Atlas Memory view — 2026-10-13
+
+- 55 backend tests passed on SQLite and isolated PostgreSQL. New coverage checks
+  opt-in graph evidence, reader isolation, dispute exclusion, explicit empty
+  evidence and absence of private responses/reasons from the bulk graph.
+- 25 frontend tests passed, including overlapping evidence filters, unknown data,
+  dimension-specific colors and removal of dangling edges. TypeScript and Docker
+  production build passed. No database migration was required.
+- An isolated mock-only browser fixture contained one meaning with recall success
+  and one without assessments. Memory showed one in each relevant category;
+  selecting recall reduced the visible graph to the evidenced meaning. Test data
+  was stored in a disposable container, not the personal database.
+- The UI displays observed historical counts, not calibrated predictions. No
+  independent grading study, longitudinal efficacy study or phone-device test was
+  performed. No paid provider calls or public deployment occurred.
+
 # Assessment quality and reader disputes — 2026-10-13
 
 - 53 backend tests passed on SQLite and isolated PostgreSQL; 23 frontend tests

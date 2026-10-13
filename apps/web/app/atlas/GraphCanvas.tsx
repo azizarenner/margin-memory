@@ -3,9 +3,9 @@ import {useEffect,useRef,useState} from 'react';
 import Graph from 'graphology';
 import type Sigma from 'sigma';
 import type FA2Layout from 'graphology-layout-forceatlas2/worker';
-import {type AtlasData,type AtlasMode,color,hash,neighborhood,relationshipLabel} from '../../lib/atlas';
+import {type AtlasData,type AtlasMode,color,memoryColor,hash,neighborhood,relationshipLabel} from '../../lib/atlas';
 
-export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMotion}:{data:AtlasData;mode:AtlasMode;selected:string;onSelect:(id:string)=>void;hops:number;reducedMotion:boolean}){
+export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMotion,memoryDimension='recall'}:{data:AtlasData;mode:AtlasMode;selected:string;onSelect:(id:string)=>void;hops:number;reducedMotion:boolean;memoryDimension?:'recognition'|'recall'}){
  const container=useRef<HTMLDivElement>(null),renderer=useRef<Sigma|null>(null),layout=useRef<FA2Layout|null>(null);
  const glow=useRef<HTMLCanvasElement>(null);
  const selectedRef=useRef(selected),callback=useRef(onSelect);callback.current=onSelect;selectedRef.current=selected;
@@ -23,7 +23,7 @@ export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMot
    const ga=group/Math.max(1,domains.length)*Math.PI*2;
    let x=Math.cos(ga)*120+Math.cos(a)*r,y=Math.sin(ga)*120+Math.sin(a)*r;
    if(mode==='orbit'&&distances){const depth=distances.get(n.id)??(hops+1);x=depth*Math.cos(a)*70;y=depth*Math.sin(a)*70;}
-   g.addNode(n.id,{x,y,label:n.label,color:color(n),kind:n.kind,size:1.2,
+   g.addNode(n.id,{x,y,label:n.label,color:mode==='memory'?memoryColor(n,memoryDimension):color(n),kind:n.kind,size:1.2,
     hidden:!!distances&&!distances.has(n.id)});
   }
   for(const e of data.edges)if(g.hasNode(e.source)&&g.hasNode(e.target)){
@@ -66,7 +66,7 @@ export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMot
   }
   void mount();
   return()=>{disposed=true;clearTimeout(timer);layout.current?.kill();layout.current=null;renderer.current?.kill();renderer.current=null;};
- },[data,mode,orbitRoot,hops,reducedMotion]);
+ },[data,mode,orbitRoot,hops,reducedMotion,memoryDimension]);
  useEffect(()=>{const s=renderer.current;if(!s)return;s.refresh();if(selected){const n=s.getNodeDisplayData(selected);if(n)s.getCamera().animate({x:n.x,y:n.y},{duration:reducedMotion?0:350});}},[selected,reducedMotion]);
  useEffect(()=>{const s=renderer.current;if(!s)return;s.setSetting('labelRenderedSizeThreshold',names==='all'?0:4);s.refresh();},[names]);
  return <><div ref={container} className="atlas-canvas" role="img" aria-label={`${data.nodes.length} nodes in ${mode} view. Use the adjacent node list for keyboard navigation.`}/>
