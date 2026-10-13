@@ -1,0 +1,86 @@
+{
+  "version": "writing-review-v1",
+  "reviewer_id": "",
+  "independent_of_implementation": false,
+  "notice": "Synthetic author-created review exercise; no gold labels or quality validation. Use pseudonymous reviewer IDs; keep completed files outside the repository.",
+  "cases": [
+    {
+      "id": "1",
+      "target": "mitigate",
+      "definition": "Make something harmful less severe.",
+      "sentence": "A second inspection could mitigate the risk.",
+      "ratings": {
+        "meaning": null,
+        "grammar": null,
+        "collocation": null,
+        "register": null,
+        "naturalness": null
+      }
+    },
+    {
+      "id": "2",
+      "target": "mitigate",
+      "definition": "Make something harmful less severe.",
+      "sentence": "I mitigate a sandwich for lunch.",
+      "ratings": {
+        "meaning": null,
+        "grammar": null,
+        "collocation": null,
+        "register": null,
+        "naturalness": null
+      }
+    },
+    {
+      "id": "3",
+      "target": "yield",
+      "definition": "Give way to another person or vehicle.",
+      "sentence": "Cyclists yield to pedestrians at the crossing.",
+      "ratings": {
+        "meaning": null,
+        "grammar": null,
+        "collocation": null,
+        "register": null,
+        "naturalness": null
+      }
+    },
+    {
+      "id": "4",
+      "target": "yield",
+      "definition": "The return earned on an investment.",
+      "sentence": "The road sign tells drivers to yield.",
+      "ratings": {
+        "meaning": null,
+        "grammar": null,
+        "collocation": null,
+        "register": null,
+        "naturalness": null
+      }
+    },
+    {
+      "id": "5",
+      "target": "alleviate",
+      "definition": "Make pain or a problem easier to bear.",
+      "sentence": "A short break alleviated the strain.",
+      "ratings": {
+        "meaning": null,
+        "grammar": null,
+        "collocation": null,
+        "register": null,
+        "naturalness": null
+      }
+    },
+    {
+      "id": "6",
+      "target": "exacerbate",
+      "definition": "Make a problem worse.",
+      "sentence": "Further delays could exacerbate the shortage.",
+      "ratings": {
+        "meaning": null,
+        "grammar": null,
+        "collocation": null,
+        "register": null,
+        "naturalness": null
+      }
+    }
+  ]
+}

@@ -12,8 +12,10 @@ guards, private dispute history, and an Atlas Memory view of observed evidence.
 Next: independently adjudicated recall-grading fixtures and cue/distractor quality
 review. Evolution now provides dated activity and a capture-date filter on current
 meanings; historical relationship reconstruction remains unimplemented.
-Contextual production, calibrated FSRS estimates and exposure-aware practice
-ranking remain unimplemented research stages.
+Prompted writing now preserves sentences, limited local form feedback and a
+separate five-part self-review. An unlabeled synthetic review packet supports
+future independent adjudication; semantic quality evaluation is not implemented.
+Calibrated FSRS estimates and exposure-aware practice ranking remain research stages.
 
 ## Milestone 1 — local reading companion
 
@@ -41,8 +43,9 @@ typed assertions, multidimensional classification storage, overlapping domain
 projection, reader-scoped graph API, and Network/Clusters/Orbit exploration.
 See [the Atlas plan](semantic-atlas.md) for its five separate research milestones.
 
-Next: reviewed sense reconciliation, relationship candidate
-resolution, sense-level progress, richer examples and a simple graph view. Exit
+Reader review of relationship candidates, sense-level evidence, and interactive
+graph views are delivered. Remaining: reviewed sense reconciliation, independently
+checked relationship quality, and richer examples. Exit
 criteria: polysemous senses stay distinct, every edge has provenance, and review
 state is visible. Add authentication and deletion/export controls before hosting.
 

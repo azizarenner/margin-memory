@@ -19,7 +19,9 @@ loads show an error/retry control rather than invented zero counts.
   pending and failed captures. They are not a count of distinct known meanings.
 - Recognition and recall count submitted attempts, including assisted, uncertain
   and disputed attempts. Starting an unanswered question is not an attempt.
-- Skips include skipping an offered check and skipping an individual exercise.
+- Prompted writing counts saved sentences with unassessed quality. The amber
+  activity series includes these alongside recognition and recall attempts.
+- Skips include skipping an offered check, an individual exercise or writing.
 - Meaning choices count recorded selection/correction/clearing events.
 - Reports count disputes on their filing date, even if the attempt was earlier.
   They do not retroactively change an earlier day's activity count.

@@ -140,6 +140,30 @@ class ObservationFlag(Record, Base):
     observation_id: Mapped[str] = mapped_column(ForeignKey('learning_observations.id'), unique=True)
     reason: Mapped[str] = mapped_column(Text)
 
+class WritingExercise(Record, Base):
+    __tablename__='writing_exercises'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'),index=True)
+    sense_id: Mapped[str] = mapped_column(ForeignKey('word_senses.id'),index=True)
+    prompt: Mapped[dict] = mapped_column(JSON)
+    accepted: Mapped[list] = mapped_column(JSON)
+
+class WritingAttempt(Record, Base):
+    __tablename__='writing_attempts'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'),index=True)
+    exercise_id: Mapped[str] = mapped_column(ForeignKey('writing_exercises.id'),unique=True)
+    sentence: Mapped[str] = mapped_column(Text)
+    assisted: Mapped[bool]
+    action: Mapped[str] = mapped_column(String(16))
+    feedback: Mapped[dict] = mapped_column(JSON)
+    __table_args__=(CheckConstraint("action IN ('answer','skip')"),)
+
+class WritingReview(Record, Base):
+    __tablename__='writing_reviews'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'),index=True)
+    attempt_id: Mapped[str] = mapped_column(ForeignKey('writing_attempts.id'),unique=True)
+    rubric: Mapped[dict] = mapped_column(JSON)
+    notes: Mapped[str] = mapped_column(Text)
+
 class Classification(Record, Base):
     __tablename__ = "lexical_classifications"
     sense_id: Mapped[str] = mapped_column(ForeignKey("word_senses.id"), index=True)

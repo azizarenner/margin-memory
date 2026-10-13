@@ -21,7 +21,7 @@ def test_evolution_counts_real_events_and_report_dates_without_private_text(clie
         db.commit()
     response=http.get('/atlas/evolution?start=2026-01-01&end=2026-01-04').json()
     assert response['timezone']=='UTC' and len(response['days'])==4
-    assert response['totals']==dict(captures=2,recognition=0,recall=1,skipped=0,meaning_choices=1,reports=1)
+    assert response['totals']==dict(production=0,captures=2,recognition=0,recall=1,skipped=0,meaning_choices=1,reports=1)
     assert response['days'][1]['recall']==1 and response['days'][1]['reports']==0
     assert response['days'][2]['reports']==1 and response['days'][3]['captures']==0
     assert 'Synthetic private' not in str(response)

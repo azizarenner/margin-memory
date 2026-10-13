@@ -166,7 +166,9 @@ def summaries(db,sense_ids):
     flags=flags_for(db,[r.id for r in rows])
     grouped={id:[] for id in sense_ids}
     for row in rows: grouped[row.sense_id].append(row)
-    return {id:summarize(items,flags) for id,items in grouped.items()}
+    from .writing import counts
+    production=counts(db,sense_ids)
+    return {id:{**summarize(items,flags),'production':production[id]} for id,items in grouped.items()}
 
 def summarize(rows,flags):
     dimensions={kind:dict(attempts=0,correct=0,incorrect=0,uncertain=0,disputed=0,assisted=0,observed=False) for kind in ('recognition','recall')}

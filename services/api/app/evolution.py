@@ -5,7 +5,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 from .db import get_db
 from .atlas import LOCAL_USER
-from .models import Occurrence, Observation, ObservationFlag
+from .models import Occurrence, Observation, ObservationFlag, WritingAttempt
 
 router=APIRouter(prefix='/atlas',tags=['Semantic Atlas'])
 
@@ -19,7 +19,7 @@ def evolution(start:date|None=None,end:date|None=None,db:Session=Depends(get_db)
         raise HTTPException(422,'End date is outside the supported range.')
     lower=datetime.combine(start,time.min,tzinfo=timezone.utc)
     upper=datetime.combine(end+timedelta(days=1),time.min,tzinfo=timezone.utc)
-    keys=('captures','recognition','recall','skipped','meaning_choices','reports')
+    keys=('captures','recognition','recall','production','skipped','meaning_choices','reports')
     days={(start+timedelta(days=i)).isoformat():dict.fromkeys(keys,0) for i in range((end-start).days+1)}
     def day(column):
         # PostgreSQL date(timestamptz) otherwise follows the connection timezone.
@@ -39,6 +39,10 @@ def evolution(start:date|None=None,end:date|None=None,db:Session=Depends(get_db)
         ObservationFlag.user_id==LOCAL_USER,Observation.user_id==LOCAL_USER,
         ObservationFlag.created_at>=lower,ObservationFlag.created_at<upper).group_by(stamp)):
         days[str(when)]['reports']=count
+    stamp=day(WritingAttempt.created_at)
+    for when,action,count in db.execute(select(stamp,WritingAttempt.action,func.count()).where(
+        WritingAttempt.user_id==LOCAL_USER,WritingAttempt.created_at>=lower,WritingAttempt.created_at<upper).group_by(stamp,WritingAttempt.action)):
+        days[str(when)]['production' if action=='answer' else 'skipped']+=count
     return dict(start=start.isoformat(),end=end.isoformat(),timezone='UTC',
         days=[dict(date=when,**counts) for when,counts in days.items()],
         totals={key:sum(d[key] for d in days.values()) for key in keys},

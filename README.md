@@ -287,11 +287,19 @@ adjustable date range, and a day-by-day graph filter. It uses UTC dates and show
 today's meanings and relationships linked to earlier captures, not an exact
 historical graph. See [Evolution semantics and limits](docs/evolution.md).
 
+## Prompted writing
+
+Optional [prompted writing](docs/writing-practice.md) is available at `/writing`.
+It preserves original sentences, checks target-form presence locally, and offers
+a five-part reader self-review. Semantic/grammatical quality remains ungraded.
+An unlabeled synthetic review packet and comparison tool support future independent
+adjudication; no independent validation result is claimed.
+
 ## Next milestones
 
 See [roadmap](docs/roadmap.md). Planned work includes reviewed sense linking,
 curated OKF export, pgvector-backed hybrid retrieval, bounded GraphRAG, Google
-ADK tools, vocabulary activation exercises, predictive retention models, reading
+ADK tools, AI-evaluated vocabulary activation, predictive retention models, reading
 recommendations and BigQuery Graph experiments. None are claimed as implemented.
 
 [Evaluation plan](docs/evaluation-plan.md) defines translation/disambiguation

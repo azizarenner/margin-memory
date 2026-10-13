@@ -33,6 +33,7 @@ export default function MemoryCheck(){
    <p>Practice meanings you have chosen in Your words. Recognition and recall are recorded separately. You can leave at any time.</p>
    {session&&<p className="note">This check draws targets from the reading session you just finished. Recognition options may use other chosen vocabulary.</p>}
    {error&&<p role="alert" className="error">{error}</p>}
+   <p><Link href="/writing">Try optional sentence writing ↗</Link></p>
    <p><Link href="/memory/history">Review past checks and reported issues ↗</Link></p>
    {!question||result?<>
     {result&&<div role="status" className="meaning"><h2>{result.flag?'Disputed result — original grade preserved':result.kind==='REVIEW_SKIPPED'?'Skipped':result.outcome==='correct'?'A successful attempt':result.outcome==='uncertain'?'Uncertain — no judgment':'Not retrieved on this attempt'}</h2><p><strong>{result.target}</strong> — {result.definition}</p><p>{result.feedback}</p><p className="note">One success is evidence of this attempt, not permanent mastery. Prompted recall is not spontaneous use.</p></div>}

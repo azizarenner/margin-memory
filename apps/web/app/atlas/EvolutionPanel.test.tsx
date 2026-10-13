@@ -2,7 +2,7 @@ import React,{useState} from 'react';
 import {render,screen,fireEvent,cleanup,waitFor} from '@testing-library/react';
 import {afterEach,it,expect,vi} from 'vitest';
 import EvolutionPanel from './EvolutionPanel';
-const empty={captures:0,recognition:0,recall:0,skipped:0,meaning_choices:0,reports:0};
+const empty={production:0,captures:0,recognition:0,recall:0,skipped:0,meaning_choices:0,reports:0};
 const timeline={start:'2026-01-01',end:'2026-01-02',days:[{...empty,date:'2026-01-01',captures:1},{...empty,date:'2026-01-02',recall:1}],totals:{...empty,captures:1,recall:1},notice:'Recorded activity, not improvement.'};
 afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 function Harness(){const [cutoff,setCutoff]=useState('');return <EvolutionPanel cutoff={cutoff} onDate={setCutoff} revision={0}/>;}

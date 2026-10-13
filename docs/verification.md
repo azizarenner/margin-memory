@@ -1,3 +1,20 @@
+# Prompted writing and self-review — 2026-10-14
+
+- 61 backend tests passed on SQLite and isolated PostgreSQL, including migration
+  round trips, reader isolation, frozen responses, idempotent retries, review
+  validation, skip behavior, graph privacy and review-packet validation.
+- 30 frontend tests and TypeScript passed. Tests cover writing submission,
+  explicit self-review labeling and byte-identical retries after failed saves.
+  Docker production build passed. Migration `7065fd007006` was applied after a
+  private backup outside the repository; Alembic reported no schema drift.
+- In an isolated mock-only browser instance, a synthetic inflected-word sentence
+  was saved, a self-review recorded, and both verified after reload. No synthetic
+  writing was added to the personal database. No provider requests were made.
+- A six-case author-created review packet remains unlabeled. Automated tests use
+  explicitly synthetic labels only to verify the comparison tool. No independent
+  human quality validation, semantic/grammar grading or learning-efficacy study
+  has been completed. Writing counts represent prompted samples, not mastery.
+
 # Atlas Evolution view — 2026-10-14
 
 - 57 backend tests passed on SQLite and isolated PostgreSQL. New tests cover
