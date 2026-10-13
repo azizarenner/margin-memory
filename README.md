@@ -17,6 +17,14 @@ The **Semantic Atlas foundation** is also implemented: open
 WebGL Network, domain-grouped Clusters, and one/two-hop Orbit views over real
 reader-scoped data. See [ontology, architecture and research plan](docs/semantic-atlas.md).
 
+The personal Atlas defaults to meanings and topics, with word identities and
+phrases available as an optional layer. It checks for changes every 15 seconds
+while visible and when you return to the tab. Case/spacing variants of domain
+names share a hub. **Suggested connections** compares stored synonym and antonym
+hints with saved meanings; compare both definitions before accepting. Suggestions
+stay outside the graph until accepted, and dismissals are remembered. Viewing
+the graph and reviewing suggestions do not make additional AI calls.
+
 ## What is implemented
 
 - Responsive reading room with source creation/selection and 1–240 minute sessions.
@@ -161,7 +169,8 @@ Alembic and Uvicorn. Never put real connection credentials in documentation.
    visible graph. On narrower screens, **Index** and **Details** open the panels.
 8. Select the **Demonstration** collection to explore hundreds of synthetic nodes.
    Use Network / Clusters / Orbit, the name controls and zoom/reset buttons.
-   **Refresh** retrieves newly captured vocabulary. No Atlas operation calls AI.
+   New vocabulary appears automatically (up to 15 seconds while visible), or use
+   **Refresh**. No Atlas operation calls AI.
 
 Domain grouping is not community detection. Node size shows connectivity, not
 importance or mastery. The Atlas does not yet predict forgetting, assign CEFR,

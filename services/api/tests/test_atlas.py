@@ -83,3 +83,74 @@ def test_demonstration_is_reproducible_connected_and_never_writes_user_history(c
     assert all(e['source'] in ids and e['target'] in ids and e['status']=='synthetic' for e in first['edges'])
     assert count(factory,Occurrence)==0
     assert all(n.get('knowledge')!='understood' for n in first['nodes'])
+
+def test_suggestions_require_review_and_rejection_survives_reload(client):
+    http,factory=client
+    for word in ('mitigate','alleviate','exacerbate'):
+        http.post('/vocabulary',json=payload(word))
+    graph=http.get('/atlas').json()
+    suggestions=graph['suggestions']
+    assert {s['kind'] for s in suggestions}=={'SYNONYM_OF','ANTONYM_OF'}
+    assert count(factory,SemanticAssertion)==0  # GET is read-only
+    assert not any(e['kind']=='SYNONYM_OF' for e in graph['edges'])
+    accepted=next(s for s in suggestions if s['kind']=='SYNONYM_OF')
+    rejected=next(s for s in suggestions if s['kind']=='ANTONYM_OF')
+    for s,status in ((accepted,'reviewed'),(rejected,'rejected')):
+        assert http.post('/atlas/suggestions/'+s['id']+'/review',json={'status':status}).status_code==200
+    reloaded=http.get('/atlas').json()
+    assert reloaded['suggestions']==[]
+    assert any(e['kind']=='SYNONYM_OF' and e['status']=='reviewed' for e in reloaded['edges'])
+    assert not any(e['kind']=='ANTONYM_OF' for e in reloaded['edges'])
+    assert http.post('/atlas/suggestions/'+accepted['id']+'/review',json={'status':'reviewed'}).status_code==409
+    assert count(factory,SemanticAssertion)==2
+
+def test_suggestions_withhold_ambiguous_targets_and_private_matches(client,monkeypatch):
+    from app import memory
+    http,factory=client
+    class Ambiguous(MockProvider):
+        def enrich(self,capture):
+            result=super().enrich(capture)
+            if capture.text=='mitigate': result.meanings[0].synonyms=['yield','alleviate']
+            return result
+    monkeypatch.setattr(memory,'get_provider',Ambiguous)
+    for word in ('mitigate','yield'): http.post('/vocabulary',json=payload(word))
+    assert http.get('/atlas').json()['suggestions']==[]
+    saved=http.post('/vocabulary',json=payload('alleviate')).json()
+    suggestion=http.get('/atlas').json()['suggestions'][0]
+    with factory() as db:
+        other=User(name='Synthetic second reader');db.add(other);db.flush()
+        db.get(Occurrence,saved['id']).user_id=other.id;db.commit()
+    assert http.get('/atlas').json()['suggestions']==[]
+    assert http.post('/atlas/suggestions/'+suggestion['id']+'/review',json={'status':'reviewed'}).status_code==409
+
+def test_domain_case_and_whitespace_share_one_hub(client,monkeypatch):
+    from app import memory
+    http,_=client
+    class Domains(MockProvider):
+        def enrich(self,capture):
+            result=super().enrich(capture)
+            result.meanings[0].subject_areas=['Engineering',' engineering ','ENGINEERING']
+            return result
+    monkeypatch.setattr(memory,'get_provider',Domains)
+    saved=http.post('/vocabulary',json=payload()).json()
+    graph=http.get('/atlas').json()
+    assert [n['label'] for n in graph['nodes'] if n['kind']=='Domain']==['Engineering']
+    assert next(n for n in graph['nodes'] if n['id']==saved['enrichment']['sense_ids'][0])['domains']==['Engineering']
+    assert len([e for e in graph['edges'] if e['kind']=='BELONGS_TO_DOMAIN'])==1
+
+def test_suggestions_do_not_cross_language_or_part_of_speech(client):
+    from app.models import Lexeme, Sense
+    http,factory=client
+    http.post('/vocabulary',json=payload('mitigate'))
+    saved=http.post('/vocabulary',json=payload('alleviate')).json()
+    assert len(http.get('/atlas').json()['suggestions'])==1
+    with factory() as db:
+        sense=db.get(Sense,saved['enrichment']['sense_ids'][0])
+        lexeme=db.get(Lexeme,sense.lexeme_id)
+        lexeme.language='ru';db.commit()
+    assert http.get('/atlas').json()['suggestions']==[]
+    with factory() as db:
+        sense=db.get(Sense,saved['enrichment']['sense_ids'][0])
+        db.get(Lexeme,sense.lexeme_id).language='en'
+        sense.part_of_speech='noun';db.commit()
+    assert http.get('/atlas').json()['suggestions']==[]

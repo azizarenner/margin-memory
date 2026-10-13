@@ -1,3 +1,25 @@
+# Atlas interpretation and suggested connections — 2026-10-13
+
+- 41 backend tests passed on SQLite and the isolated PostgreSQL test database.
+  New cases cover proposal acceptance/dismissal and persistence, no writes from
+  graph reads, reader isolation, ambiguity/language/part-of-speech exclusions,
+  and domain case/whitespace reconciliation.
+- 16 frontend tests passed, covering explicit suggestion acceptance, automatic
+  polling and timer cleanup, focus refresh, and preserving the previous graph
+  after a refresh failure. TypeScript and Docker production build passed.
+- Browser inspection of the personal Atlas at the existing narrow viewport and
+  a separate 1280 × 720 tab confirmed guidance, simplified layers and readable
+  meaning labels. New captures appeared during automatic refresh. The original
+  reading-room tab was left available for the reader.
+- No paid provider calls were initiated for these checks. Synthetic relationship
+  review is covered in isolated API/UI tests; no personal semantic judgments were
+  accepted or dismissed on the reader's behalf.
+- No migration was needed; provider snapshots and existing reading records are
+  preserved. Suggestions remain a conservative retrieval baseline, not verified
+  semantic facts. Human-adjudicated accuracy evaluation remains future work.
+
+---
+
 # Semantic Atlas foundation and initial visualization — 2026-10-13
 
 - 37 backend tests passed on SQLite and the isolated PostgreSQL test database.

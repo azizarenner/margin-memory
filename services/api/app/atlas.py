@@ -17,6 +17,9 @@ LOCAL_USER = '00000000-0000-0000-0000-000000000001'
 RelationKind = Literal['SYNONYM_OF','ANTONYM_OF','RELATED_TO','HYPERNYM_OF','MORPHOLOGICALLY_RELATED_TO']
 SYMMETRIC = {'SYNONYM_OF','ANTONYM_OF','RELATED_TO','MORPHOLOGICALLY_RELATED_TO'}
 
+def domain_label(value):
+    return " ".join(value.split()).casefold().capitalize()
+
 def stable(kind, value):
     return kind + ':' + sha256(value.casefold().strip().encode()).hexdigest()[:20]
 
@@ -78,6 +81,7 @@ def graph(limit: int = Query(500, ge=1, le=1000), db: Session = Depends(get_db))
                 for value in meaning.get(field,[])[:12]:
                     if not isinstance(value,str) or not value.strip(): continue
                     value=value.strip()[:240]
+                    if dimension=="domain": value=domain_label(value)
                     nid=stable(kind,value)
                     if nid not in nodes:
                         nodes[nid]=node(nid,value,kind,status='proposed',provenance=provenance)
@@ -89,20 +93,21 @@ def graph(limit: int = Query(500, ge=1, le=1000), db: Session = Depends(get_db))
         nodes[c.sense_id]['classifications'].append(dict(dimension=c.dimension,value=c.value,
             confidence=c.confidence,status=c.status,evidence=c.evidence,provenance=c.provenance))
         if c.dimension=='domain' and c.domain_id in domain_rows:
-            d=domain_rows[c.domain_id]; nid='domain:'+d.id
-            nodes[nid]=node(nid,d.name,'Domain',definition=d.description,status=c.status,provenance=d.provenance)
-            if d.name not in nodes[c.sense_id]['domains']: nodes[c.sense_id]['domains'].append(d.name)
+            d=domain_rows[c.domain_id]; nid=stable('Domain',domain_label(d.name))
+            nodes[nid]=node(nid,domain_label(d.name),'Domain',definition=d.description,status=c.status,provenance=d.provenance)
+            if domain_label(d.name) not in nodes[c.sense_id]['domains']: nodes[c.sense_id]['domains'].append(domain_label(d.name))
             add_edge(edge('classification:'+c.id,c.sense_id,nid,'BELONGS_TO_DOMAIN',c.status,c.evidence,c.provenance,c.confidence))
     # Only taxonomy nodes reachable from visible classifications are projected.
     parents=list(db.scalars(select(DomainParent)))
     for _ in range(len(domain_rows)):
         changed=False
         for p in parents:
-            child,parent='domain:'+p.child_id,'domain:'+p.parent_id
+            child,parent=stable('Domain',domain_label(domain_rows[p.child_id].name)),stable('Domain',domain_label(domain_rows[p.parent_id].name))
+            if child == parent: continue
             if child not in nodes or p.parent_id not in domain_rows: continue
             d=domain_rows[p.parent_id]
             if parent not in nodes:
-                nodes[parent]=node(parent,d.name,'Domain',definition=d.description,status='structural',provenance=d.provenance);changed=True
+                nodes[parent]=node(parent,domain_label(d.name),'Domain',definition=d.description,status='structural',provenance=d.provenance);changed=True
             add_edge(edge(child+':'+parent,child,parent,'SUBDOMAIN_OF','structural','Stored taxonomy; not a detected community',d.provenance))
         if not changed: break
     for model in (SemanticAssertion,Relationship):
@@ -111,7 +116,9 @@ def graph(limit: int = Query(500, ge=1, le=1000), db: Session = Depends(get_db))
         for r in db.scalars(query):
             add_edge(edge(r.id,r.from_sense_id,r.to_sense_id,r.kind,r.status,
                 getattr(r,'evidence','Legacy relationship'),r.provenance,getattr(r,'confidence',None)))
-    return dict(dataset='personal',nodes=list(nodes.values()),edges=list(edges.values()),
+    from .atlas_suggestions import suggest
+    suggestions=[] if truncated else suggest(db,rows,occurrences[:2000],LOCAL_USER)
+    return dict(dataset='personal',suggestions=suggestions,nodes=list(nodes.values()),edges=list(edges.values()),
         truncated=truncated,history_truncated=history_truncated,
         notice='Private local graph. Candidate senses are not demonstrated knowledge. No recall probabilities are estimated.')
 
@@ -138,6 +145,19 @@ def create_relationship(data: AssertionCreate,db: Session=Depends(get_db)):
 
 class AssertionReview(StrictModel):
     status: Literal['reviewed','rejected']
+
+@router.post('/suggestions/{id}/review')
+def review_suggestion(id: str, data: AssertionReview, db: Session=Depends(get_db)):
+    # Rebuild from owned stored evidence; do not trust client-supplied endpoints.
+    candidate=next((s for s in graph(limit=1000,db=db)['suggestions'] if s['id']==id),None)
+    if candidate is None:
+        raise HTTPException(409,'Suggestion is no longer available. Refresh the Atlas.')
+    a,b=sorted((candidate['source'],candidate['target']))
+    r=get_or_create(db,SemanticAssertion,dict(user_id=LOCAL_USER,from_sense_id=a,to_sense_id=b,kind=candidate['kind']),
+        status=data.status,evidence=candidate['evidence'],confidence=None,
+        provenance={**candidate['provenance'],'review_source':'reader','verified':False})
+    db.commit()
+    return dict(id=r.id,status=r.status)
 
 @router.post('/relationships/{id}/review')
 def review_relationship(id: UUID,data: AssertionReview,db:Session=Depends(get_db)):

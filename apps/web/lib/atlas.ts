@@ -1,6 +1,8 @@
 export type AtlasNode = {id:string;label:string;kind:string;domains:string[];definition?:string;example?:string;language?:string;part_of_speech?:string;status:string;knowledge?:string;encounters?:number;reviewed_encounters?:number;translations?:{language:string;text:string}[];provenance:Record<string,unknown>;classifications:{dimension:string;value:string;status:string;evidence:string;confidence:number|null;provenance:Record<string,unknown>}[]};
 export type AtlasEdge = {id:string;source:string;target:string;kind:string;status:string;evidence:string;confidence:number|null;provenance:Record<string,unknown>};
-export type AtlasData = {dataset:string;nodes:AtlasNode[];edges:AtlasEdge[];notice:string;truncated:boolean;history_truncated:boolean};
+export type AtlasSuggestion = Pick<AtlasEdge,'id'|'source'|'target'|'kind'|'evidence'|'provenance'>;
+export type AtlasData = {dataset:string;nodes:AtlasNode[];edges:AtlasEdge[];suggestions?:AtlasSuggestion[];notice:string;truncated:boolean;history_truncated:boolean};
+export function relationshipLabel(kind:string){return ({SYNONYM_OF:'Similar meaning',ANTONYM_OF:'Opposite meaning',RELATED_TO:'Related meaning',HYPERNYM_OF:'Broader meaning',MORPHOLOGICALLY_RELATED_TO:'Word family',BELONGS_TO_DOMAIN:'Topic',HAS_SENSE:'Meaning of word',PART_OF_COLLOCATION:'Used in phrase',SUBDOMAIN_OF:'Subtopic'} as Record<string,string>)[kind]||kind;}
 export type AtlasMode = 'network'|'clusters'|'orbit';
 export const palette=['#a6dadd','#b39afb','#deeb48','#8acb92','#ec7358','#c6d5e2','#78abea'];
 export function hash(text:string){let h=2166136261;for(const c of text)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;}

@@ -3,7 +3,7 @@ import {useEffect,useRef,useState} from 'react';
 import Graph from 'graphology';
 import type Sigma from 'sigma';
 import type FA2Layout from 'graphology-layout-forceatlas2/worker';
-import {type AtlasData,type AtlasMode,color,hash,neighborhood} from '../../lib/atlas';
+import {type AtlasData,type AtlasMode,color,hash,neighborhood,relationshipLabel} from '../../lib/atlas';
 
 export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMotion}:{data:AtlasData;mode:AtlasMode;selected:string;onSelect:(id:string)=>void;hops:number;reducedMotion:boolean}){
  const container=useRef<HTMLDivElement>(null),renderer=useRef<Sigma|null>(null),layout=useRef<FA2Layout|null>(null);
@@ -29,7 +29,7 @@ export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMot
   for(const e of data.edges)if(g.hasNode(e.source)&&g.hasNode(e.target)){
    const hex=g.getNodeAttribute(e.source,'color') as string;
    const rgb=[1,3,5].map(i=>Math.round(parseInt(hex.slice(i,i+2),16)*.45));
-   g.addEdgeWithKey(e.id,e.source,e.target,{weight:e.kind==='BELONGS_TO_DOMAIN'?.12:.8,type:'curve',curvature:(hash(e.id)%2?1:-1)*.07,size:.6,color:`rgb(${rgb.join(',')})`,label:e.kind.replaceAll('_',' ').toLowerCase(),hidden:!!distances&&(!distances.has(e.source)||!distances.has(e.target))});
+   g.addEdgeWithKey(e.id,e.source,e.target,{weight:e.kind==='BELONGS_TO_DOMAIN'?.12:.8,type:'curve',curvature:(hash(e.id)%2?1:-1)*.07,size:.6,color:`rgb(${rgb.join(',')})`,label:relationshipLabel(e.kind),hidden:!!distances&&(!distances.has(e.source)||!distances.has(e.target))});
   }
   g.forEachNode(id=>g.setNodeAttribute(id,'size',Math.min(7,.7+Math.sqrt(g.degree(id))*.55)));
   async function mount(){
@@ -39,7 +39,7 @@ export default function GraphCanvas({data,mode,selected,onSelect,hops,reducedMot
     setError('');
     const s=new SigmaRenderer(g,container.current,{edgeProgramClasses:{curve:CurveProgram},labelFont:'monospace',labelColor:{color:'#c4c8c8'},labelSize:10,labelDensity:.08,labelRenderedSizeThreshold:4,renderEdgeLabels:false,hideEdgesOnMove:false,allowInvalidContainer:true,minEdgeThickness:.35,itemSizesReference:'screen',zoomToSizeRatioFunction:r=>Math.max(.8,Math.pow(r,.15)),stagePadding:32,
       defaultDrawNodeHover:(ctx,d)=>{ctx.strokeStyle=d.color;ctx.lineWidth=1;ctx.beginPath();ctx.arc(d.x,d.y,d.size+5,0,Math.PI*2);ctx.stroke();if(d.label){ctx.font='11px monospace';const w=ctx.measureText(d.label).width;ctx.fillStyle='#090909';ctx.fillRect(d.x+d.size+9,d.y-12,w+12,23);ctx.fillStyle='#eff0e9';ctx.fillText(d.label,d.x+d.size+15,d.y+4);}},
-      nodeReducer:(id,attrs)=>{const focus=selectedRef.current;const dim=focus&&g.hasNode(focus)&&focus!==id&&!g.areNeighbors(id,focus);return {...attrs,label:namesRef.current==='off'&&id!==focus?'':attrs.label,color:dim?'#34383a':attrs.color,highlighted:id===focus,forceLabel:id===focus||namesRef.current==='all',size:id===focus?Math.max(4,attrs.size):attrs.size};},
+      nodeReducer:(id,attrs)=>{const focus=selectedRef.current;const dim=focus&&g.hasNode(focus)&&focus!==id&&!g.areNeighbors(id,focus);return {...attrs,label:namesRef.current==='off'&&id!==focus?'':attrs.label,color:dim?'#34383a':attrs.color,highlighted:id===focus,forceLabel:id===focus||namesRef.current==='all'||(namesRef.current==='key'&&data.dataset==='personal'&&g.order<=150&&attrs.kind==='WordSense'),size:id===focus?Math.max(4,attrs.size):attrs.size};},
       edgeReducer:(id,attrs)=>{const focus=selectedRef.current;const touches=focus&&(g.source(id)===focus||g.target(id)===focus);return {...attrs,color:touches?'#6a7878':focus?'#15191a':attrs.color,size:touches?.7:attrs.size};}});
     renderer.current=s;
     s.on('afterRender',()=>{

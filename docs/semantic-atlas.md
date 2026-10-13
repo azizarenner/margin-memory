@@ -1,5 +1,54 @@
 # Semantic Atlas: foundation and research plan
 
+## Personal graph interpretation and connection review
+
+The default view shows meanings and domain hubs. Word identity and collocation
+nodes remain available through an optional layer. Small personal graphs label
+their meanings by default. Topic membership is explained separately from
+synonymy; node size and distance are not knowledge scores. Search opens the node
+index on narrow screens. A summary, empty-state instructions, readable relationship
+names and the suggestion queue provide starting points for exploration.
+
+Domain projection normalizes Unicode case and whitespace, joining labels such as
+Engineering and engineering without changing provider snapshots or stored facts.
+This is conservative label reconciliation, not ontology alignment: semantic aliases
+such as finance and economics remain separate. Acronym capitalization may be lost
+in display labels. Domain assignments retain their original evidence on links.
+
+`GET /atlas` includes a separate `suggestions` list, capped at 100. A deterministic
+rule matches stored synonym/antonym strings to exact normalized lemmas in the
+reader's visible vocabulary, with matching language and part of speech. Ambiguous
+target lemmas are withheld. Suggestions are disabled when the sense snapshot is
+truncated; only the existing bounded encounter window is examined. Missing hints,
+inflections and uncertain matches produce no suggestions. This is a candidate
+retrieval baseline, not an automatic sense-relation classifier or lexical import.
+
+`POST /atlas/suggestions/{id}/review` accepts reviewed/rejected status and rebuilds
+the candidate from owned evidence. The client cannot supply arbitrary endpoints.
+Both decisions persist in the existing user-owned assertion table. Accepted links
+appear on the graph; rejected links stay absent and are not suggested again.
+Provider/model provenance and rule version are retained alongside reader review.
+Stale or already reviewed proposals return 409. Readers can reject accepted links
+from the inspector. Existing assertion review records current state, not a complete
+edit history. No new schema migration or provider call is required.
+
+Visible personal maps poll every 15 seconds and refresh on focus. Requests are
+cancelled on collection change/unmount and overlapping polls are skipped. Identical
+snapshots retain object identity to avoid restarting the layout; failed background
+refreshes preserve the last graph and show an error. Changed graph snapshots can
+restart layout settling. Demonstration data does not poll periodically.
+
+### Controlled baseline checks
+
+Synthetic mock fixtures expect two proposals after capturing mitigate, alleviate
+and exacerbate: one synonym candidate and one antonym candidate. Tests verify the
+two expected types, absence of automatic edges, acceptance, dismissal, persistence,
+privacy isolation, ambiguous-target exclusion, and language/part-of-speech guards.
+These are authored regression cases, not independent linguistic validation. A
+larger human-adjudicated set of sense pairs, with held-out precision/recall and
+abstention reporting, remains necessary before claiming semantic accuracy or
+comparing an LLM classifier with this exact-match baseline.
+
 Implemented scope: Atlas milestone 1 and an initial milestone 2 explorer. The
 reading MVP, real/mock providers, immutable provider snapshots, sense selection,
 existing tables and migration history are preserved. This is a local, single-reader
@@ -116,7 +165,7 @@ separate migration should evaluate its changed rendering API. See the official
 - Paths deliberately ignore direction for exploration and say so. They are not
   proofs of semantic entailment. Direction/type remain visible in edge details.
 - Filters run locally; changing a filter does not issue another graph request.
-  Refresh picks up new vocabulary and changes made elsewhere.
+  Automatic checks (15 seconds while visible) and Refresh pick up new vocabulary.
 - Reduced motion disables the force worker and camera animation. WebGL failure
   leaves a searchable node list and inspector. No FPS guarantee is claimed.
 
