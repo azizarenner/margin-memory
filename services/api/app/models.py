@@ -133,6 +133,13 @@ class DomainParent(Base):
     parent_id: Mapped[str] = mapped_column(ForeignKey("lexical_domains.id"), primary_key=True)
     __table_args__ = (CheckConstraint("child_id <> parent_id"),)
 
+class ObservationFlag(Record, Base):
+    """Reader dispute stored separately from the original grade."""
+    __tablename__ = 'observation_flags'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    observation_id: Mapped[str] = mapped_column(ForeignKey('learning_observations.id'), unique=True)
+    reason: Mapped[str] = mapped_column(Text)
+
 class Classification(Record, Base):
     __tablename__ = "lexical_classifications"
     sense_id: Mapped[str] = mapped_column(ForeignKey("word_senses.id"), index=True)

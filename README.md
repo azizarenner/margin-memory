@@ -27,6 +27,12 @@ the graph and reviewing suggestions do not make additional AI calls.
 
 ## What is implemented
 
+- Assessment quality checks exclude known synonym distractors. A reproducible
+  synthetic [grading benchmark](docs/assessment-quality.md) compares rule versions.
+- [Private check history](http://localhost:3000/memory/history) lets you report
+  questionable questions or grades. Disputes preserve original evidence and exclude
+  the attempt from derived success/failure counts; they do not assign a new grade.
+
 - Optional [Memory Check](http://localhost:3000/memory): recognition and definition-cued
   recall using meanings you explicitly chose. Offered after closing a session, or
   available from navigation. Skips, assistance and uncertain alternatives are recorded

@@ -1,3 +1,21 @@
+# Assessment quality and reader disputes — 2026-10-13
+
+- 53 backend tests passed on SQLite and isolated PostgreSQL; 23 frontend tests
+  passed. TypeScript and the Docker production build passed.
+- Additive migration `6f54ec006005` applied after a private backup outside the
+  repository. Alembic reported no schema drift. Existing reading data preserved.
+- Browser verification used a separate Docker network with a mock-only API and
+  disposable SQLite database. A synthetic recall result was reported through
+  the history page, then reloaded: the dispute and original correct grade both
+  remained visible. API tests confirm disputed attempts are excluded from derived
+  success/failure evidence. No synthetic answers were added to the personal app.
+- The 30-case author-generated regression fixture accepted 16/16 known-valid
+  forms with the candidate, versus 6/16 with the baseline; neither accepted any
+  of the ten known-invalid or four unresolved cases. These examples informed
+  implementation and are not an independent accuracy evaluation.
+- No paid AI calls, memory probabilities, dispute resolution service, or public
+  deployment were introduced. Broader human-adjudicated evaluation remains open.
+
 # Learning evidence and optional Memory Check — 2026-10-13
 
 - 48 backend tests passed on SQLite and isolated PostgreSQL. Coverage includes

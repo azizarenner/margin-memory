@@ -1,5 +1,11 @@
 # Learning evidence: bounded implementation and research protocol
 
+Update: [assessment quality and reader disputes](assessment-quality.md) documents
+`evidence-v2`, recognition exclusions, preserved grading versions, the synthetic
+benchmark and history/reporting workflow. The original baseline below describes
+the first evidence slice; disputed attempts are now separately counted and excluded
+from derived success/failure evidence.
+
 Margin Memory asks whether semantic relationships and longitudinal observations
 can support useful practice and eventually calibrated memory estimates. This
 milestone collects evidence; it does not establish that learning improves.

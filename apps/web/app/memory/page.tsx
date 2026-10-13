@@ -2,9 +2,10 @@
 import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {api} from '../../lib/memory';
+import ObservationReview,{type Dispute} from './ObservationReview';
 
 type Question={id:string;kind:'recognition'|'recall';prompt:{instruction:string;clue:string;options:{id:string;text:string}[];assistance:string;source:string}};
-type Result={kind:string;outcome:'correct'|'incorrect'|'uncertain'|null;target:string;definition:string;feedback:string};
+type Result={id?:string;flag?:Dispute|null;kind:string;outcome:'correct'|'incorrect'|'uncertain'|null;target:string;definition:string;feedback:string};
 type Submission={answer:string;action:'answer'|'dont_know'|'skip'|'uncertain';duration_ms:number;assisted:boolean};
 
 export default function MemoryCheck(){
@@ -32,10 +33,12 @@ export default function MemoryCheck(){
    <p>Practice meanings you have chosen in Your words. Recognition and recall are recorded separately. You can leave at any time.</p>
    {session&&<p className="note">This check draws targets from the reading session you just finished. Recognition options may use other chosen vocabulary.</p>}
    {error&&<p role="alert" className="error">{error}</p>}
+   <p><Link href="/memory/history">Review past checks and reported issues ↗</Link></p>
    {!question||result?<>
-    {result&&<div role="status" className="meaning"><h2>{result.kind==='REVIEW_SKIPPED'?'Skipped':result.outcome==='correct'?'A successful attempt':result.outcome==='uncertain'?'Uncertain — no judgment':'Not retrieved on this attempt'}</h2><p><strong>{result.target}</strong> — {result.definition}</p><p>{result.feedback}</p><p className="note">One success is evidence of this attempt, not permanent mastery. Prompted recall is not spontaneous use.</p></div>}
+    {result&&<div role="status" className="meaning"><h2>{result.flag?'Disputed result — original grade preserved':result.kind==='REVIEW_SKIPPED'?'Skipped':result.outcome==='correct'?'A successful attempt':result.outcome==='uncertain'?'Uncertain — no judgment':'Not retrieved on this attempt'}</h2><p><strong>{result.target}</strong> — {result.definition}</p><p>{result.feedback}</p><p className="note">One success is evidence of this attempt, not permanent mastery. Prompted recall is not spontaneous use.</p></div>}
     <h2>{result?'Another check?':'Choose a check'}</h2>
-    <p>Recognition: choose a meaning in context. Requires three chosen words with the same part of speech.</p>
+    {result?.id&&result.kind!=='REVIEW_SKIPPED'&&<ObservationReview id={result.id} flag={result.flag} onFlag={flag=>setResult(old=>old?{...old,flag}:old)}/>}
+    <p>Recognition: choose a meaning in context. Needs at least three chosen words with the same part of speech and distinct options that pass quality checks.</p>
     <button className="secondary" disabled={busy} onClick={()=>void start('recognition')}>Try recognition</button>
     <p>Recall: retrieve the English word from its definition, without seeing the word first.</p>
     <button className="primary" disabled={busy} onClick={()=>void start('recall')}>Try recall</button>

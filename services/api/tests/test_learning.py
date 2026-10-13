@@ -25,7 +25,7 @@ def test_recall_hides_target_and_preserves_idempotent_observations(client):
     response=dict(answer='Mitigated!',duration_ms=2500,assisted=False)
     path='/learning/assessments/'+question['id']+'/answer'
     result=http.post(path,json=response).json()
-    assert result['outcome']=='correct' and result['evaluator_version']=='evidence-v1'
+    assert result['outcome']=='correct' and result['evaluator_version']=='evidence-v2'
     assert http.post(path,json=response).json()==result
     assert http.post(path,json={'answer':'another'}).status_code==409
     summary=http.get('/learning/senses/'+sid).json()['summary']
@@ -42,7 +42,7 @@ def test_uncertainty_skip_and_assistance_do_not_invent_mastery(client):
         result=http.post('/learning/assessments/'+question['id']+'/answer',json=response)
         assert result.status_code==200 and result.json()['outcome']==outcome
     data=http.get('/learning/senses/'+sid).json()
-    assert data['summary']['recall']==dict(attempts=4,correct=1,incorrect=1,uncertain=2,assisted=1,observed=False)
+    assert data['summary']['recall']==dict(attempts=4,correct=1,incorrect=1,uncertain=2,assisted=1,disputed=0,observed=False)
     assert data['summary']['skipped']==1
     assert not data['summary']['production']['observed']
 
