@@ -6,7 +6,7 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from .db import get_db
-from .models import Source, ReadingSession, Occurrence, LearningEvent, Candidate, now
+from .models import Source, ReadingSession, Occurrence, LearningEvent, Observation, Candidate, now
 from .schemas import SourceCreate, SessionCreate, Capture, SenseSelection
 from .memory import enrich_occurrence, fingerprint, get_or_create, can_enrich
 from .errors import ERROR_MESSAGES
@@ -16,6 +16,8 @@ LOCAL_USER = "00000000-0000-0000-0000-000000000001"
 app = FastAPI(title="Margin Memory", version="0.1.0")
 from .atlas import router as atlas_router
 app.include_router(atlas_router)
+from .learning import router as learning_router
+app.include_router(learning_router)
 
 def iso(value):
     return value.replace(tzinfo=timezone.utc).isoformat() if value.tzinfo is None else value.isoformat()
@@ -123,6 +125,11 @@ def select_meaning(id: UUID, data: SenseSelection, db: Session = Depends(get_db)
             sense_id not in (row.enrichment or {}).get("sense_ids", [])):
         raise HTTPException(422, "Choose a meaning offered for this encounter.")
     if row.selected_sense_id != sense_id or (sense_id and row.reviewed_at is None):
+        db.add(Observation(user_id=LOCAL_USER,sense_id=sense_id or row.selected_sense_id,
+            occurrence_id=row.id,session_id=row.session_id,assessment_id=None,
+            kind='USER_CORRECTED_MEANING',outcome=None,payload={'source':'reader_selection',
+                'previous_sense_id':row.selected_sense_id,'selected_sense_id':sense_id,
+                'feedback':'Reader confirmed, changed or cleared a meaning; not a learning assessment.'}))
         row.selected_sense_id = sense_id
         row.reviewed_at = now() if sense_id else None
         db.commit()

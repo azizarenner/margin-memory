@@ -102,6 +102,31 @@ class Domain(Record, Base):
     description: Mapped[str] = mapped_column(Text)
     provenance: Mapped[dict] = mapped_column(JSON)
 
+class Assessment(Record, Base):
+    """Private immutable prompt and server-only answer key."""
+    __tablename__ = 'memory_assessments'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    sense_id: Mapped[str] = mapped_column(ForeignKey('word_senses.id'), index=True)
+    session_id: Mapped[str | None] = mapped_column(ForeignKey('reading_sessions.id'))
+    kind: Mapped[str] = mapped_column(String(24))
+    prompt: Mapped[dict] = mapped_column(JSON)
+    answer_key: Mapped[dict] = mapped_column(JSON)
+    __table_args__ = (CheckConstraint("kind IN ('recognition','recall')"),)
+
+class Observation(Record, Base):
+    """Append-only through the API; legacy capture events remain intact."""
+    __tablename__ = 'learning_observations'
+    user_id: Mapped[str] = mapped_column(ForeignKey('users.id'), index=True)
+    sense_id: Mapped[str | None] = mapped_column(ForeignKey('word_senses.id'), index=True)
+    session_id: Mapped[str | None] = mapped_column(ForeignKey('reading_sessions.id'))
+    occurrence_id: Mapped[str | None] = mapped_column(ForeignKey('vocabulary_occurrences.id'))
+    assessment_id: Mapped[str | None] = mapped_column(ForeignKey('memory_assessments.id'), unique=True)
+    kind: Mapped[str] = mapped_column(String(40))
+    outcome: Mapped[str | None] = mapped_column(String(24))
+    payload: Mapped[dict] = mapped_column(JSON)
+    __table_args__ = (CheckConstraint("kind IN ('RECOGNITION_ATTEMPTED','RECALL_ATTEMPTED','REVIEW_SKIPPED','USER_CORRECTED_MEANING')"),
+        CheckConstraint("outcome IS NULL OR outcome IN ('correct','incorrect','uncertain')"),)
+
 class DomainParent(Base):
     __tablename__ = "domain_parents"
     child_id: Mapped[str] = mapped_column(ForeignKey("lexical_domains.id"), primary_key=True)

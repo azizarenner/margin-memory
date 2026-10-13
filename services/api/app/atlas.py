@@ -169,11 +169,12 @@ def review_relationship(id: UUID,data: AssertionReview,db:Session=Depends(get_db
 @router.get('/senses/{id}')
 def sense_details(id:UUID,db:Session=Depends(get_db)):
     require_sense(db,id)
+    from .learning import summary
     rows=db.execute(select(Occurrence,Source.title).outerjoin(Source,Occurrence.source_id==Source.id)
         .join(Candidate,Candidate.occurrence_id==Occurrence.id)
         .where(Occurrence.user_id==LOCAL_USER,Candidate.sense_id==str(id))
         .order_by(Occurrence.created_at.desc()).limit(51)).all()
-    return dict(truncated=len(rows)>50,occurrences=[dict(id=o.id,text=o.original_text,context=o.context,source=title,
+    return dict(learning=summary(db,id),truncated=len(rows)>50,occurrences=[dict(id=o.id,text=o.original_text,context=o.context,source=title,
         created_at=o.created_at.isoformat(),reviewed=bool(o.reviewed_at and o.selected_sense_id==str(id))) for o,title in rows[:50]])
 
 @router.get('/demo')
