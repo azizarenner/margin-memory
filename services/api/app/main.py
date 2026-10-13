@@ -18,6 +18,8 @@ from .atlas import router as atlas_router
 app.include_router(atlas_router)
 from .learning import router as learning_router
 app.include_router(learning_router)
+from .evolution import router as evolution_router
+app.include_router(evolution_router)
 
 def iso(value):
     return value.replace(tzinfo=timezone.utc).isoformat() if value.tzinfo is None else value.isoformat()

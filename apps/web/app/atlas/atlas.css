@@ -32,3 +32,5 @@
 .atlas-memory-controls label{display:block;margin:6px 0}
 .atlas-memory-controls select{width:100%;background:#17202b;color:#e3e9ef;padding:6px;border:1px solid #465261}
 .atlas-memory-controls p{margin:8px 0;line-height:1.4}
+.atlas-evolution-controls{margin:14px 0;padding:12px;border:1px solid #35404d;border-radius:8px;background:#0e131a;font-size:12px}
+.atlas-evolution-controls input{width:100%;box-sizing:border-box}.atlas-evolution-controls p{line-height:1.5;margin:10px 0}.atlas-evolution-controls dl>div{display:flex;justify-content:space-between;gap:6px}.atlas-evolution-controls dd{margin:0}.atlas-evolution-controls .atlas-inline{flex-wrap:wrap}.atlas-evolution-controls button{margin-top:8px}

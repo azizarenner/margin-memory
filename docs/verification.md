@@ -1,3 +1,21 @@
+# Atlas Evolution view — 2026-10-14
+
+- 57 backend tests passed on SQLite and isolated PostgreSQL. New tests cover
+  inclusive UTC day boundaries, zero-filled days, separate report filing dates,
+  repeated captures, earliest linked capture dates, reader isolation, private-text
+  exclusion and invalid range rejection.
+- 28 frontend tests and TypeScript passed, including date navigation, request
+  recovery, preservation of draft dates during refresh, and graph filtering without
+  dangling links. Docker production build passed; no migration was needed.
+- Browser verification used a disposable mock-only API and database on a separate
+  Docker network. Two captures and a recall attempt were assigned synthetic dates.
+  Stepping backward showed the correct daily counts and removed the later-captured
+  meaning from the graph. The personal database received no synthetic records.
+- Historical relationship/definition replay, causal learning improvement, real
+  phone behavior and predictive memory calibration remain unverified or unimplemented.
+  Evolution is explicitly a current graph filtered by capture date, alongside dated
+  activity. No paid AI request or public deployment was introduced.
+
 # Atlas Memory view — 2026-10-13
 
 - 55 backend tests passed on SQLite and isolated PostgreSQL. New coverage checks

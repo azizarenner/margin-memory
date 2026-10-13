@@ -4,7 +4,8 @@ from typing import Literal
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import Field
-from sqlalchemy import select
+from sqlalchemy import select, func
+from datetime import timezone
 from sqlalchemy.orm import Session
 from .db import get_db
 from .models import (Sense, Lexeme, Candidate, Occurrence, Translation, Classification,
@@ -40,7 +41,7 @@ def require_sense(db, id):
     return sense
 
 @router.get('')
-def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, db: Session = Depends(get_db)):
+def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, evolution: bool = False, db: Session = Depends(get_db)):
     rows = list(db.execute(select(Sense, Lexeme).join(Lexeme).where(Sense.id.in_(visible_senses()))
         .order_by(Sense.id).limit(limit + 1)))
     truncated = len(rows) > limit
@@ -122,6 +123,13 @@ def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, db: Sess
         from .learning import summaries
         for id,evidence in summaries(db,[s.id for s,_ in rows]).items():
             nodes[id]['learning']=evidence
+    if evolution:
+        first_captures=db.execute(select(Candidate.sense_id,func.min(Occurrence.created_at)).join(
+            Occurrence,Candidate.occurrence_id==Occurrence.id).where(Occurrence.user_id==LOCAL_USER,
+            Candidate.sense_id.in_(ids)).group_by(Candidate.sense_id))
+        for id,stamp in first_captures:
+            stamp=stamp.replace(tzinfo=timezone.utc) if stamp.tzinfo is None else stamp.astimezone(timezone.utc)
+            nodes[id]['first_capture_date']=stamp.date().isoformat()
     return dict(dataset='personal',suggestions=suggestions,nodes=list(nodes.values()),edges=list(edges.values()),
         truncated=truncated,history_truncated=history_truncated,
         notice='Private local graph. Candidate senses are not demonstrated knowledge. No recall probabilities are estimated.')

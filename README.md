@@ -280,6 +280,13 @@ or definition-cued recall coloring and filter by observed success, disputed chec
 or no assessment attempts. Categories overlap; missing evidence is not a deficit.
 See [Memory view semantics](docs/memory-atlas.md). No predicted mastery is displayed.
 
+## Atlas Evolution view
+
+The **Evolution** Atlas view adds daily reading and assessment activity, an
+adjustable date range, and a day-by-day graph filter. It uses UTC dates and shows
+today's meanings and relationships linked to earlier captures, not an exact
+historical graph. See [Evolution semantics and limits](docs/evolution.md).
+
 ## Next milestones
 
 See [roadmap](docs/roadmap.md). Planned work includes reviewed sense linking,
