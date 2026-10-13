@@ -1,7 +1,7 @@
 """Shared lexical knowledge and private memory are separate aggregates."""
 from datetime import datetime, timezone
 from uuid import uuid4
-from sqlalchemy import String, Text, DateTime, ForeignKey, UniqueConstraint, CheckConstraint, JSON
+from sqlalchemy import String, Text, DateTime, ForeignKey, UniqueConstraint, CheckConstraint, JSON, Float
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 def now():
@@ -95,3 +95,46 @@ class LearningEvent(Record, Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id"))
     occurrence_id: Mapped[str] = mapped_column(ForeignKey("vocabulary_occurrences.id"), unique=True)
     kind: Mapped[str] = mapped_column(String(24), default="encounter")
+
+class Domain(Record, Base):
+    __tablename__ = "lexical_domains"
+    name: Mapped[str] = mapped_column(String(120), unique=True)
+    description: Mapped[str] = mapped_column(Text)
+    provenance: Mapped[dict] = mapped_column(JSON)
+
+class DomainParent(Base):
+    __tablename__ = "domain_parents"
+    child_id: Mapped[str] = mapped_column(ForeignKey("lexical_domains.id"), primary_key=True)
+    parent_id: Mapped[str] = mapped_column(ForeignKey("lexical_domains.id"), primary_key=True)
+    __table_args__ = (CheckConstraint("child_id <> parent_id"),)
+
+class Classification(Record, Base):
+    __tablename__ = "lexical_classifications"
+    sense_id: Mapped[str] = mapped_column(ForeignKey("word_senses.id"), index=True)
+    dimension: Mapped[str] = mapped_column(String(32))
+    value: Mapped[str] = mapped_column(String(240))
+    domain_id: Mapped[str | None] = mapped_column(ForeignKey("lexical_domains.id"))
+    confidence: Mapped[float | None] = mapped_column(Float)
+    status: Mapped[str] = mapped_column(String(24))
+    evidence: Mapped[str] = mapped_column(Text)
+    provenance: Mapped[dict] = mapped_column(JSON)
+    __table_args__ = (CheckConstraint("dimension IN ('domain','register','frequency','cefr','concreteness','morphology','academic','collocation')"),
+        CheckConstraint("status IN ('proposed','reviewed','rejected')"),
+        CheckConstraint("confidence IS NULL OR (confidence >= 0 AND confidence <= 1)"),)
+
+class SemanticAssertion(Record, Base):
+    """Evidence-bearing personal assertions; legacy shared relationships remain intact."""
+    __tablename__ = "semantic_assertions"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
+    from_sense_id: Mapped[str] = mapped_column(ForeignKey("word_senses.id"), index=True)
+    to_sense_id: Mapped[str] = mapped_column(ForeignKey("word_senses.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(32))
+    status: Mapped[str] = mapped_column(String(24))
+    evidence: Mapped[str] = mapped_column(Text)
+    confidence: Mapped[float | None] = mapped_column(Float)
+    provenance: Mapped[dict] = mapped_column(JSON)
+    __table_args__ = (UniqueConstraint("user_id", "from_sense_id", "to_sense_id", "kind"),
+        CheckConstraint("kind IN ('SYNONYM_OF','ANTONYM_OF','RELATED_TO','HYPERNYM_OF','MORPHOLOGICALLY_RELATED_TO')"),
+        CheckConstraint("status IN ('proposed','reviewed','rejected')"),
+        CheckConstraint("from_sense_id <> to_sense_id"),
+        CheckConstraint("confidence IS NULL OR (confidence >= 0 AND confidence <= 1)"),)

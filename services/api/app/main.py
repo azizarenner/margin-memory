@@ -14,6 +14,8 @@ from .config import settings
 
 LOCAL_USER = "00000000-0000-0000-0000-000000000001"
 app = FastAPI(title="Margin Memory", version="0.1.0")
+from .atlas import router as atlas_router
+app.include_router(atlas_router)
 
 def iso(value):
     return value.replace(tzinfo=timezone.utc).isoformat() if value.tzinfo is None else value.isoformat()
