@@ -44,6 +44,13 @@ embedding similarity alone to merge financial and agricultural meanings of
 “yield”. Candidate senses link to each encounter. No selection is inferred from
 merely having several candidates.
 
+The reader can choose only a candidate attached to that encounter. Selection
+updates the occurrence under a row lock and records `reviewed_at`; it never calls
+AI or changes shared senses. Clearing the choice restores uncertainty. The UI
+reads the current selection from occurrence fields and labels provider selections
+as unreviewed suggestions. The original provider JSON is retained for provenance.
+Multiple tabs use the last committed choice; there is no edit-conflict UI yet.
+
 Translations are language-specific sense records. Per-encounter enrichment holds
 context meaning, confidence, classifications and suggestion arrays along with
 provider, model and prompt version. It is private. Generic shared definitions

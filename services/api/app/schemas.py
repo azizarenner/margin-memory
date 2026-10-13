@@ -7,6 +7,8 @@ class StrictModel(BaseModel):
     model_config = ConfigDict(extra="forbid")
 class SourceCreate(StrictModel):
     title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=240)]
+class SenseSelection(StrictModel):
+    sense_id: UUID | None
 class SessionCreate(StrictModel):
     source_id: UUID
     minutes: int = Field(ge=1, le=240)

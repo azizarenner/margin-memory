@@ -6,8 +6,8 @@ from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from .db import get_db
-from .models import Source, ReadingSession, Occurrence, LearningEvent, now
-from .schemas import SourceCreate, SessionCreate, Capture
+from .models import Source, ReadingSession, Occurrence, LearningEvent, Candidate, now
+from .schemas import SourceCreate, SessionCreate, Capture, SenseSelection
 from .memory import enrich_occurrence, fingerprint, get_or_create, can_enrich
 from .errors import ERROR_MESSAGES
 from .config import settings
@@ -25,6 +25,8 @@ def occurrence_json(db, row):
     return dict(id=row.id, text=row.original_text, context=row.context, status=row.status,
         source=source.title if source else None, source_id=row.source_id, session_id=row.session_id,
         created_at=iso(row.created_at), enrichment=row.enrichment,
+        selected_sense_id=row.selected_sense_id,
+        reviewed_at=iso(row.reviewed_at) if row.reviewed_at else None,
         enrichment_error=ERROR_MESSAGES.get(row.enrichment_error), can_retry=can_enrich(row))
 def owned(db, model, id):
     row = db.get(model, str(id))
@@ -105,3 +107,21 @@ def retry(id: UUID, db: Session = Depends(get_db)):
     if can_enrich(row):
         row = enrich_occurrence(db, row.id)
     return occurrence_json(db,row)
+
+@app.post("/vocabulary/{id}/selection")
+def select_meaning(id: UUID, data: SenseSelection, db: Session = Depends(get_db)):
+    row = db.scalar(select(Occurrence).where(Occurrence.id == str(id),
+        Occurrence.user_id == LOCAL_USER).with_for_update())
+    if row is None:
+        raise HTTPException(404, "Record not found")
+    if row.status != "enriched":
+        raise HTTPException(409, "This word has no ready meanings to review yet.")
+    sense_id = str(data.sense_id) if data.sense_id else None
+    if sense_id and (not db.get(Candidate, (row.id, sense_id)) or
+            sense_id not in (row.enrichment or {}).get("sense_ids", [])):
+        raise HTTPException(422, "Choose a meaning offered for this encounter.")
+    if row.selected_sense_id != sense_id or (sense_id and row.reviewed_at is None):
+        row.selected_sense_id = sense_id
+        row.reviewed_at = now() if sense_id else None
+        db.commit()
+    return occurrence_json(db, row)

@@ -45,6 +45,15 @@ consistency and local ownership are checked in the service. Multi-user security
 must enforce these constraints for authenticated users and revisit database
 ownership constraints; changing the local user constant is not authentication.
 
+`reviewed_at` is set only when the reader explicitly chooses a candidate. Existing
+provider-selected IDs remain suggestions with a null review timestamp. Clearing
+a choice clears both fields. The original enrichment JSON, including its
+`selected_index`, remains an immutable provider snapshot; API clients use the
+top-level `selected_sense_id` and `reviewed_at` for current selection. The selection
+endpoint locks the owned occurrence and checks candidate membership before writing.
+Repeated identical choices preserve the timestamp. This stores the current review,
+not a full history of edits or a claim that the underlying definition is verified.
+
 The root migration contains explicit schema operations and seed records, not
 imports of mutable application metadata. Tests upgrade and downgrade it. Use
 `alembic revision --autogenerate -m '...'`, review the generated revision, then

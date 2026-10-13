@@ -20,6 +20,8 @@ exporter are future work.
 - Capture committed before enrichment; failures remain saved and can be retried.
 - OpenAI structured-output adapter and deterministic, credential-free mock provider.
 - Saved encounters with definitions, translations, candidate meanings, context and source.
+- Meaning review: confirm a candidate for one encounter, change it, or clear the
+  choice. Reader choices are distinguished from unreviewed provider suggestions.
 - Lexemes separated from senses, multilingual translation records, typed relationship schema.
 - Alembic migrations, backend integration tests, frontend tests, CI and synthetic OKF examples.
 
@@ -140,6 +142,10 @@ Alembic and Uvicorn. Never put real connection credentials in documentation.
 4. Try `yield` to see separate possible meanings.
 5. Open **Your words** to see durable encounters; repeat a word to preserve its
    new context without duplicating an identical lexical sense.
+6. Select **Choose this meaning** under the intended meaning. Your choice is saved
+   for that encounter and marked **Your chosen meaning**. Choose another meaning
+   to change it, or **Clear choice — I’m unsure** to leave it undecided. Reviewing
+   a meaning makes no AI request and does not alter other encounters or shared definitions.
 
 ## Configuration
 

@@ -64,6 +64,7 @@ class Occurrence(Record, Base):
     session_id: Mapped[str | None] = mapped_column(ForeignKey("reading_sessions.id"))
     lexeme_id: Mapped[str | None] = mapped_column(ForeignKey("lexemes.id"))
     selected_sense_id: Mapped[str | None] = mapped_column(ForeignKey("word_senses.id"))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     status: Mapped[str] = mapped_column(String(24), default="pending")
     enrichment: Mapped[dict | None] = mapped_column(JSON)
     enrichment_error: Mapped[str | None] = mapped_column(String(32))

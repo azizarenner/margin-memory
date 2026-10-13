@@ -18,7 +18,10 @@ evaluation, latency measurement and cost controls remain work to do.
 
 ## Milestone 2 — trustworthy sense curation
 
-Add manual disambiguation, reviewed sense reconciliation, relationship candidate
+Implemented: manual per-encounter meaning selection, changing/clearing the choice,
+and persisted reader review distinct from the original provider suggestion.
+
+Next: reviewed sense reconciliation, relationship candidate
 resolution, sense-level progress, richer examples and a simple graph view. Exit
 criteria: polysemous senses stay distinct, every edge has provenance, and review
 state is visible. Add authentication and deletion/export controls before hosting.

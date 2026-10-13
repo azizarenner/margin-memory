@@ -6,19 +6,22 @@ type Speech = {lang:string; continuous:boolean; interimResults:boolean; onresult
 type SpeechConstructor = new()=>Speech;
 declare global { interface Window { SpeechRecognition?:SpeechConstructor; webkitSpeechRecognition?:SpeechConstructor } }
 
-function WordCard({word,retry}:{word:Occurrence; retry:(id:string)=>void}) {
+function WordCard({word,retry,select,busy}:{word:Occurrence; retry:(id:string)=>void; select:(id:string,sense:string|null)=>void; busy:boolean}) {
   const result=word.enrichment;
   return <article className="word-card">
     <div className="row"><h3>{result?.lemma || word.text}</h3><span className="tag">{word.status === "enriched" ? "Saved" : word.status}</span></div>
     {word.text !== result?.lemma && result && <small>Captured as “{word.text}”</small>}
     {result?.meanings.map((meaning,index)=><div className="meaning" key={index}>
-      <small>{meaning.part_of_speech} · {result.selected_index===index ? "Selected meaning" : "Possible meaning"}</small>
+      <small>{meaning.part_of_speech} · {word.selected_sense_id === result.sense_ids?.[index] && word.selected_sense_id ? (word.reviewed_at ? "Your chosen meaning" : "Suggested meaning · not reviewed") : "Possible meaning"}</small>
       <p className="translation" lang="ru">{meaning.translation}</p><p>{meaning.definition}</p>
       <p className="example">{meaning.example}</p>
       {meaning.context_meaning && <p>In context: {meaning.context_meaning}</p>}
       {!!meaning.collocations.length && <small>Often with: {meaning.collocations.join(", ")}</small>}
       {!!meaning.synonyms.length && <p className="muted">Suggested synonyms: {meaning.synonyms.join(", ")}</p>}
+      {word.status === "enriched" && result.sense_ids?.[index] && <button className="secondary" disabled={busy || (!!word.reviewed_at && word.selected_sense_id === result.sense_ids[index])} aria-label={`Choose meaning ${index+1} for ${word.text}`} onClick={()=>select(word.id,result.sense_ids![index])}>{word.reviewed_at && word.selected_sense_id === result.sense_ids[index] ? "Chosen by you" : "Choose this meaning"}</button>}
     </div>)}
+    {word.selected_sense_id && word.status === "enriched" && <button className="secondary" disabled={busy} onClick={()=>select(word.id,null)}>Clear choice — I’m unsure</button>}
+    {word.reviewed_at && <p className="note">Reviewed by you · {new Date(word.reviewed_at).toLocaleDateString()}. Your choice applies to this encounter.</p>}
     {result?.uncertainty && <p className="note">{result.uncertainty}</p>}
     {word.context && <blockquote>{word.context}</blockquote>}
     <footer>{word.source || "Quick capture"} · {new Date(word.created_at).toLocaleDateString()}{result && ` · ${result.provenance.provider}`}</footer>
@@ -104,6 +107,11 @@ export default function Home() {
     const word=await api<Occurrence>("/vocabulary",{...payload,request_id:pending.current.id});
     pending.current=null;setLatest(word);setText("");setContext("");input.current?.focus();
   }
+  function selectMeaning(id:string,sense:string|null) {void run(async()=>{
+    const updated=await api<Occurrence>(`/vocabulary/${id}/selection`,{sense_id:sense});
+    setLatest(old=>old?.id===id?updated:old);
+    setWords(old=>old.map(word=>word.id===id?updated:word));
+  });}
   function retry(id:string) {void run(async()=>{const word=await api<Occurrence>(`/vocabulary/${id}/retry`,{});if(latest?.id===id)setLatest(word);if(tab==="words")await refresh();});}
   return <main>
     <header className="masthead"><a className="brand" href="/">m<span className="brand-dot">.</span> <span>Margin Memory</span></a><span className="eyebrow">A little reading. A lasting memory.</span></header>
@@ -131,8 +139,8 @@ export default function Home() {
           <button className="primary full" disabled={busy||!ready||!text.trim()}>{busy?"Saving & explaining…":"Explain & remember"}<span>↗</span></button>
         </form><p className="panel-footnote">{provider==="mock"?"Try mitigate, alleviate, exacerbate, or yield. Other words are saved without an explanation.":provider==="openai"?"Your word and optional sentence are sent to OpenAI for enrichment.":"Connecting to your memory…"}</p>
       </section></div>
-      {latest && <section aria-live="polite" className="recent"><p className="eyebrow">JUST ADDED TO YOUR MEMORY</p><WordCard word={latest} retry={retry}/></section>}
-    </> : <><section className="intro"><p className="eyebrow">YOUR PERSONAL MEMORY</p><h1>Words, with a story.</h1><p>Every encounter keeps its source and context.</p></section><div className="word-grid">{words.map(word=><WordCard key={word.id} word={word} retry={retry}/>)}</div>{busy && <p role="status">Loading your memory…</p>}{!busy && !words.length && <div className="empty"><h2>Your next word belongs here.</h2><p>Capture a word in the reading room to begin.</p></div>}{hasMore && <button className="secondary" disabled={busy} onClick={()=>void run(()=>refresh(true))}>Load older encounters</button>}</>}
+      {latest && <section aria-live="polite" className="recent"><p className="eyebrow">JUST ADDED TO YOUR MEMORY</p><WordCard word={latest} retry={retry} select={selectMeaning} busy={busy}/></section>}
+    </> : <><section className="intro"><p className="eyebrow">YOUR PERSONAL MEMORY</p><h1>Words, with a story.</h1><p>Every encounter keeps its source and context.</p></section><div className="word-grid">{words.map(word=><WordCard key={word.id} word={word} retry={retry} select={selectMeaning} busy={busy}/>)}</div>{busy && <p role="status">Loading your memory…</p>}{!busy && !words.length && <div className="empty"><h2>Your next word belongs here.</h2><p>Capture a word in the reading room to begin.</p></div>}{hasMore && <button className="secondary" disabled={busy} onClick={()=>void run(()=>refresh(true))}>Load older encounters</button>}</>}
     <footer className="site-footer"><span>Margin Memory</span><span>Local development · single reader</span></footer>
   </main>;
 }

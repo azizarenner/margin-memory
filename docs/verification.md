@@ -1,3 +1,22 @@
+# Sense selection and review — 2026-10-13
+
+- 32 backend tests passed on SQLite and a dedicated PostgreSQL database. New
+  tests cover choosing, changing, clearing, repeated identical requests,
+  persistence, encounter isolation, ownership and invalid candidate rejection.
+- 8 frontend tests passed, including saved review after remount, clearing a
+  choice and retaining the previous choice when the server rejects an update.
+- Standalone TypeScript check and Docker production build passed.
+- Migration `3c21bf003002` applied to the existing local database; Alembic schema
+  drift check passed. Existing reading records remain intact.
+- Browser review of the synthetic river-bank encounter survived reload; clearing
+  and restoring the choice also passed. Choices
+  use the local API only; no new OpenAI requests are needed for review.
+- Provider snapshots remain unchanged. Reader review records only the current
+  choice; an edit history, review queue, sense reconciliation and relationship
+  curation are not implemented. Concurrent tabs use the last committed choice.
+
+---
+
 # Real AI verification — 2026-10-13
 
 - OpenAI mode loaded a private user-configured key on the server only.

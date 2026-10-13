@@ -2,7 +2,40 @@ import React from "react";
 import {render,screen,fireEvent,waitFor,cleanup} from "@testing-library/react";
 import {it,expect,vi,afterEach} from "vitest";
 import Home from "./page";
+import type { Occurrence } from "../lib/memory";
 afterEach(()=>{cleanup();vi.unstubAllGlobals();localStorage.clear();});
+
+it.each([false,true])("persists meaning review or retains the previous choice on failure (%s)",async(fail)=>{
+ let word:Occurrence={id:"one",text:"yield",source:null,context:null,created_at:"2026-01-01",status:"enriched",selected_sense_id:"s1",reviewed_at:null,enrichment:{lemma:"yield",sense_ids:["s1","s2"],selected_index:0,uncertainty:null,provenance:{provider:"mock"},meanings:["Give way.","Produce a crop."].map(definition=>({definition,translation:"пример",example:"A synthetic example.",part_of_speech:"verb",context_meaning:null,synonyms:[],antonyms:[],collocations:[],confidence:0.8}))}};
+ const fetcher=vi.fn(async(url:string,options?:RequestInit)=>{
+   if(url.endsWith("/selection")) {
+     if(fail)return {ok:false,json:async()=>({detail:"Review could not be saved."})};
+     const id=JSON.parse(options?.body as string).sense_id;
+     word={...word,selected_sense_id:id,reviewed_at:id?"2026-01-02":null};
+     return {ok:true,json:async()=>word};
+   }
+   return {ok:true,json:async()=>url.endsWith("/health")?{provider:"mock"}:url.endsWith("/sources")?[]:[word]};
+ });
+ vi.stubGlobal("fetch",fetcher);
+ const view=render(<Home/>);await screen.findByText("Sample mode · EN → RU");
+ fireEvent.click(screen.getByRole("button",{name:"Your words"}));
+ await screen.findByText(/Suggested meaning · not reviewed/);
+ fireEvent.click(screen.getByRole("button",{name:"Choose meaning 2 for yield"}));
+ if(fail){
+   await screen.findByText("Review could not be saved.");
+   expect(screen.queryByText(/Your chosen meaning/)).toBeNull();
+   expect(screen.getByText(/Suggested meaning · not reviewed/)).toBeTruthy();
+ }else{
+   await screen.findByText(/Your chosen meaning/);
+   expect(fetcher).toHaveBeenCalledWith("/api/vocabulary/one/selection",expect.objectContaining({body:JSON.stringify({sense_id:"s2"})}));
+   view.unmount();render(<Home/>);await screen.findByText("Sample mode · EN → RU");
+   fireEvent.click(screen.getByRole("button",{name:"Your words"}));
+   await screen.findByText(/Your chosen meaning/);
+   fireEvent.click(screen.getByRole("button",{name:"Clear choice — I’m unsure"}));
+   await waitFor(()=>expect(screen.queryByText(/Your chosen meaning/)).toBeNull());
+   expect(screen.getAllByText(/Possible meaning/)).toHaveLength(2);
+ }
+});
 it("captures a typed word and displays its saved definition",async()=>{
  vi.stubGlobal("fetch",vi.fn(async(url:string,options?:RequestInit)=>{
    const data=url.endsWith("/health")?{provider:"mock"}:url.endsWith("/sources")?[]:
