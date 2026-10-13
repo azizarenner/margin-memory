@@ -1,3 +1,30 @@
+# Learning evidence and optional Memory Check — 2026-10-13
+
+- 48 backend tests passed on SQLite and isolated PostgreSQL. Coverage includes
+  migration round trips, target withholding, server grading, answer idempotency,
+  conflict handling, reader isolation, session scope, skips, uncertainty,
+  assistance, correction history and private-answer exclusion from bulk graphs.
+- 21 frontend tests passed, including the optional post-session handoff, skip,
+  hidden recall prompt, submitted assistance, insufficient-evidence guidance and
+  byte-identical answer retries. TypeScript and Docker production build passed.
+- Migration `5e43db005004` applied to the existing local application. Alembic
+  schema drift check passed. A private local backup was taken outside the source
+  repository before applying the additive migration.
+- Browser exercise submissions used a disposable mock-only SQLite API and web
+  instance on a separate Docker network. The build-time API rewrite required
+  isolation by network alias; an initial unanswered prompt reached the local app,
+  but no test answer was submitted there. Provider and exact synthetic vocabulary
+  were verified through the test proxy before browser answers were submitted.
+- Actual browser recognition and inflected recall submissions persisted. Atlas
+  details showed separate counts and retained recall evidence after a reload.
+  Production stayed “not assessed” and recall probability stayed unestimated.
+- No new paid AI requests or personal judgments were made by this verification.
+  Tests establish software behavior, not validated exercise quality, semantic
+  grading accuracy, memory calibration or learning gains. See
+  [scientific assumptions and evaluation plan](learning-evidence.md).
+
+---
+
 # Atlas interpretation and suggested connections — 2026-10-13
 
 - 41 backend tests passed on SQLite and the isolated PostgreSQL test database.

@@ -1,5 +1,16 @@
 # Roadmap
 
+## Learning evidence — implemented bounded slice
+
+Private prompt snapshots and append-only observations; optional post-reading
+recognition and definition-cued recall; conservative local grading with abstention;
+separate recognition/recall summaries in Atlas details. See
+[the evidence model and evaluation protocol](learning-evidence.md).
+
+Next: independently adjudicated recall-grading fixtures and cue/distractor quality
+review. Contextual production, calibrated FSRS estimates, richer Memory/Evolution
+views and exposure-aware practice ranking remain unimplemented research stages.
+
 ## Milestone 1 — local reading companion
 
 Implemented: sources, sessions, persisted deadline, text and opt-in browser voice

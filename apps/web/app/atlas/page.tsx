@@ -7,6 +7,8 @@ import {type AtlasData,type AtlasMode,color,filterGraph,shortestPath,relationshi
 import './atlas.css';
 
 type Encounter={id:string;context:string|null;source:string|null;created_at:string;reviewed:boolean};
+type EvidenceDimension={attempts:number;correct:number;incorrect:number;uncertain:number;assisted:number;observed:boolean};
+type LearningSummary={recognition:EvidenceDimension;recall:EvidenceDimension;notice:string};
 export default function Atlas(){
  const [indexOpen,setIndexOpen]=useState(false),[detailsOpen,setDetailsOpen]=useState(false);
  const [dataset,setDataset]=useState('personal'),[data,setData]=useState<AtlasData|null>(null),[error,setError]=useState('');
@@ -16,6 +18,7 @@ export default function Atlas(){
  const [target,setTarget]=useState(''),[kind,setKind]=useState('RELATED_TO'),[evidence,setEvidence]=useState('');
  const [encounters,setEncounters]=useState<Encounter[]>([]),[detailError,setDetailError]=useState(''),[showCount,setShowCount]=useState(30);
  const [allNodes,setAllNodes]=useState(false),[updated,setUpdated]=useState('');
+ const [learning,setLearning]=useState<LearningSummary|null>(null);
  useEffect(()=>{const media=window.matchMedia('(prefers-reduced-motion: reduce)');setReduced(media.matches);const change=()=>setReduced(media.matches);media.addEventListener('change',change);return()=>media.removeEventListener('change',change);},[]);
  useEffect(()=>{
   const abort=new AbortController();let inFlight=false;
@@ -36,11 +39,14 @@ export default function Atlas(){
  const nearby=filtered?.edges.filter(e=>e.source===selected||e.target===selected)||[];
  const path=useMemo(()=>filtered&&selected&&target?shortestPath(filtered,selected,target):[],[filtered,selected,target]);
  useEffect(()=>{
-  setEncounters([]);setDetailError('');
+  setEncounters([]);setLearning(null);setDetailError('');
   if(!focus||focus.kind!=='WordSense'||dataset==='demo')return;
-  const abort=new AbortController();fetch(`/api/atlas/senses/${focus.id}`,{signal:abort.signal}).then(r=>{if(!r.ok)throw Error('Encounter details could not be loaded.');return r.json();}).then(d=>setEncounters(d.occurrences)).catch(e=>{if(e.name!=='AbortError')setDetailError(e.message);});
-  return()=>abort.abort();
- },[focus,dataset]);
+  const abort=new AbortController();let loading=false;
+  async function refresh(){if(loading)return;loading=true;try{const r=await fetch(`/api/atlas/senses/${focus!.id}`,{signal:abort.signal});if(!r.ok)throw Error('Encounter details could not be loaded.');const d=await r.json();if(!abort.signal.aborted){setEncounters(d.occurrences);setLearning(d.learning||null);setDetailError('');}}catch(e){if(!abort.signal.aborted)setDetailError(e instanceof Error?e.message:'Could not refresh evidence.');}finally{loading=false;}}
+  void refresh();const visible=()=>{if(!document.hidden)void refresh();};
+  const timer=window.setInterval(visible,15000);window.addEventListener('focus',visible);
+  return()=>{abort.abort();window.clearInterval(timer);window.removeEventListener('focus',visible);};
+ },[focus,dataset,revision]);
  function choose(id:string){setSelected(id);if(!id)setMode(current=>current==='orbit'?'network':current);if(id)setDetailsOpen(true);setTarget('');setEvidence('');setMessage('');}
  async function save(){
   if(busy)return;setBusy(true);setError('');
@@ -83,6 +89,7 @@ export default function Atlas(){
     {dataset==='personal'&&!focus&&<section aria-label="Suggested connections"><h2>Connections to review</h2><p>Compare the two definitions. A matching word in an explanation is a clue, not proof that these meanings match.</p>{!data?.suggestions?.length&&<p>No suggestions to review yet. Capture related words as you read. Ambiguous matches are withheld.</p>}{data?.suggestions?.slice(0,10).map(s=>{const a=data.nodes.find(n=>n.id===s.source),b=data.nodes.find(n=>n.id===s.target);return <article className="atlas-suggestion" key={s.id}><h3>Possible {relationshipLabel(s.kind).toLowerCase()}</h3><p><strong>{a?.label}</strong> — {a?.definition}</p><p><strong>{b?.label}</strong> — {b?.definition}</p><small>{s.evidence}</small><small>Source: {String(s.provenance.provider||'stored explanation')} · {String(s.provenance.model||'unknown model')}</small><div className="atlas-inline"><button disabled={busy} onClick={()=>void reviewSuggestion(s.id,'reviewed')}>Accept connection</button><button disabled={busy} onClick={()=>void reviewSuggestion(s.id,'rejected')}>Dismiss</button></div></article>;})}{(data?.suggestions?.length||0)>10&&<p>Showing the first 10. Review these to reveal more.</p>}{message&&<p role="status">{message}</p>}</section>}
     {focus?<><span className="atlas-node-type">{focus.kind}</span><h2>{focus.label}</h2>{focus.translations?.map((t,i)=><p className="atlas-translation" lang={t.language} key={i}>{t.text}</p>)}<p>{focus.definition||'Explore the connected meanings to inspect their evidence.'}</p>{focus.example&&<blockquote>{focus.example}</blockquote>}
      <div className="atlas-tags">{focus.domains.map(d=><span key={d}>{d}</span>)}</div>
+     {learning&&<section aria-label="Observed learning evidence"><h3>Observed learning evidence</h3>{(['recognition','recall'] as const).map(d=><div key={d}><strong>{d==='recall'?'Definition-cued recall':'Recognition'}</strong><p>{learning[d].observed?'Success observed without reported extra help':'No unassisted success recorded'}</p><small>{learning[d].attempts} attempts · {learning[d].correct} correct · {learning[d].incorrect} unsuccessful · {learning[d].uncertain} uncertain · {learning[d].assisted} with extra help</small></div>)}<p>Production: not assessed. Recall probability: not estimated.</p><p>{learning.notice}</p><Link href="/memory">Optional Memory Check ↗</Link></section>}
      <dl><dt>Source</dt><dd>{String(focus.provenance.source||focus.provenance.provider||'database')}</dd>{!!focus.provenance.model&&<><dt>Model</dt><dd>{String(focus.provenance.model)}</dd></>}<dt>Status</dt><dd>{focus.status}</dd>{focus.kind==='WordSense'&&<><dt>Learning evidence</dt><dd>{dataset==='demo'?'No learner history':`${focus.encounters||0} candidate encounters · ${focus.reviewed_encounters||0} reviewed selections`}</dd><dt>Recall probability</dt><dd>Not estimated</dd></>}</dl>
      {!!focus.classifications.length&&<><h3>Classifications</h3>{focus.classifications.map((c,i)=><p key={i}>{c.dimension}: {c.value}<small>{c.status} · {c.evidence}</small></p>)}</>}
      <div className="atlas-divider"/><h3>Explore this neighborhood</h3><div className="atlas-inline"><button onClick={()=>{setHops(1);setMode('orbit');}}>One hop</button><button onClick={()=>{setHops(2);setMode('orbit');}}>Two hops</button></div>

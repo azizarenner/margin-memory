@@ -1,5 +1,13 @@
 # Architecture and decisions
 
+The learning-evidence slice adds private `memory_assessments` and
+`learning_observations` tables beside the preserved capture-event log. The API
+generates bounded recognition/recall prompts from reader-chosen meanings and grades
+submissions locally. Summaries are recomputed independently for each assessment
+dimension; they are not shared graph facts or mastery predictions. See
+[learning evidence](learning-evidence.md) for event semantics, API boundaries,
+idempotency, privacy, assumptions and research evaluation gates.
+
 ## Milestone 1 implementation plan
 
 1. Verify tools, dependencies and the canonical OKF specification.

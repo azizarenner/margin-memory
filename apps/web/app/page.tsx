@@ -36,6 +36,7 @@ export default function Home() {
   const [newTitle,setNewTitle]=useState("");
   const [minutes,setMinutes]=useState(15);
   const [session,setSession]=useState<Session|null>(null);
+  const [memoryOffer,setMemoryOffer]=useState<{session_id:string;request_id:string}|null>(null);
   const [seconds,setSeconds]=useState(0);
   const [text,setText]=useState("");
   const [context,setContext]=useState("");
@@ -116,7 +117,7 @@ export default function Home() {
   function retry(id:string) {void run(async()=>{const word=await api<Occurrence>(`/vocabulary/${id}/retry`,{});if(latest?.id===id)setLatest(word);if(tab==="words")await refresh();});}
   return <main>
     <header className="masthead"><a className="brand" href="/">m<span className="brand-dot">.</span> <span>Margin Memory</span></a><span className="eyebrow">A little reading. A lasting memory.</span></header>
-    <nav aria-label="Main navigation"><button aria-current={tab==="read"?"page":undefined} onClick={()=>setTab("read")}>Reading room</button><button aria-current={tab==="words"?"page":undefined} onClick={()=>{setTab("words");void run(()=>refresh());}}>Your words</button><Link href="/atlas" style={{fontSize:13,color:"inherit",textDecoration:"none"}}>Semantic Atlas ↗</Link><span className="mode">{provider ? `${provider === "mock" ? "Sample" : "AI"} mode · EN → RU` : "Connecting…"}</span></nav>
+    <nav aria-label="Main navigation"><button aria-current={tab==="read"?"page":undefined} onClick={()=>setTab("read")}>Reading room</button><button aria-current={tab==="words"?"page":undefined} onClick={()=>{setTab("words");void run(()=>refresh());}}>Your words</button><Link href="/atlas" style={{fontSize:13,color:"inherit",textDecoration:"none"}}>Semantic Atlas ↗</Link><Link href="/memory" style={{fontSize:13,color:"inherit"}}>Memory Check</Link><span className="mode">{provider ? `${provider === "mock" ? "Sample" : "AI"} mode · EN → RU` : "Connecting…"}</span></nav>
     {error && <div role="alert" className="error">{error}</div>}
     {tab==="read" ? <>
       <section className="intro"><p className="eyebrow">YOUR READING ROOM</p><h1>Stay with the story.</h1><p>Keep the words you meet along the way.</p></section>
@@ -128,7 +129,7 @@ export default function Home() {
           <label>How long would you like to read?</label><div className="durations">{[5,10,15,30,60].map(n=><button key={n} aria-pressed={minutes===n} className="secondary" onClick={()=>setMinutes(n)}>{n}m</button>)}</div>
           <label className="custom">Custom minutes <input aria-label="Custom minutes" type="number" min={1} max={240} value={minutes} onChange={e=>setMinutes(Number(e.target.value))}/></label>
           <button className="primary full" disabled={busy||!ready||!source||!Number.isInteger(minutes)||minutes<1||minutes>240} onClick={()=>void run(async()=>{const s=await api<Session>("/sessions",{source_id:source,minutes});setSession(s);localStorage.setItem("margin-memory-session",s.id);})}>Begin reading <span>→</span></button>
-        </> : <div className="active-session"><p>{sources.find(s=>s.id===session.source_id)?.title}</p><div className="timer" role="timer" aria-label="Time remaining">{clock(seconds)}</div><p aria-live="polite">{seconds>0?"One page at a time.":"Your reading time is complete. Take a breath."}</p><button className="secondary" disabled={busy} onClick={()=>void run(async()=>{await api(`/sessions/${session.id}/end`,{});setSession(null);localStorage.removeItem("margin-memory-session");})}>{seconds>0?"Finish session":"Close session"}</button></div>}
+        </> : <div className="active-session"><p>{sources.find(s=>s.id===session.source_id)?.title}</p><div className="timer" role="timer" aria-label="Time remaining">{clock(seconds)}</div><p aria-live="polite">{seconds>0?"One page at a time.":"Your reading time is complete. Take a breath."}</p><button className="secondary" disabled={busy} onClick={()=>void run(async()=>{await api(`/sessions/${session.id}/end`,{});setMemoryOffer({session_id:session.id,request_id:crypto.randomUUID()});setSession(null);localStorage.removeItem("margin-memory-session");})}>{seconds>0?"Finish session":"Close session"}</button></div>}
         <p className="panel-footnote">Your timer follows a saved deadline, even when you leave this page.</p>
       </section>
       <section className="panel capture-panel" aria-label="Word capture"><div className="row"><h2>A word worth keeping</h2><span className="small-mark">02</span></div><p className="muted">A quick meaning, then back to your book.</p>
@@ -140,6 +141,7 @@ export default function Home() {
           <button className="primary full" disabled={busy||!ready||!text.trim()}>{busy?"Saving & explaining…":"Explain & remember"}<span>↗</span></button>
         </form><p className="panel-footnote">{provider==="mock"?"Try mitigate, alleviate, exacerbate, or yield. Other words are saved without an explanation.":provider==="openai"?"Your word and optional sentence are sent to OpenAI for enrichment.":"Connecting to your memory…"}</p>
       </section></div>
+      {memoryOffer&&<section className="panel recent" aria-label="Optional Memory Check"><h2>A moment to remember?</h2><p>Try a short, optional recognition or recall check. Skipping says nothing about your knowledge.</p><Link href={`/memory?session=${memoryOffer.session_id}`}>Start Memory Check ↗</Link><button className="secondary" disabled={busy} onClick={()=>void run(async()=>{await api("/learning/skips",memoryOffer);setMemoryOffer(null);})}>Not now</button></section>}
       {latest && <section aria-live="polite" className="recent"><p className="eyebrow">JUST ADDED TO YOUR MEMORY</p><WordCard word={latest} retry={retry} select={selectMeaning} busy={busy}/></section>}
     </> : <><section className="intro"><p className="eyebrow">YOUR PERSONAL MEMORY</p><h1>Words, with a story.</h1><p>Every encounter keeps its source and context.</p></section><div className="word-grid">{words.map(word=><WordCard key={word.id} word={word} retry={retry} select={selectMeaning} busy={busy}/>)}</div>{busy && <p role="status">Loading your memory…</p>}{!busy && !words.length && <div className="empty"><h2>Your next word belongs here.</h2><p>Capture a word in the reading room to begin.</p></div>}{hasMore && <button className="secondary" disabled={busy} onClick={()=>void run(()=>refresh(true))}>Load older encounters</button>}</>}
     <footer className="site-footer"><span>Margin Memory</span><span>Local development · single reader</span></footer>

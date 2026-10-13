@@ -5,6 +5,19 @@ import Home from "./page";
 import type { Occurrence } from "../lib/memory";
 afterEach(()=>{cleanup();vi.unstubAllGlobals();localStorage.clear();});
 
+it('offers an optional check after closing a session and records a skip without blocking reading',async()=>{
+ localStorage.setItem('margin-memory-session','session-one');
+ const fetcher=vi.fn(async(url:string)=>({ok:true,json:async()=>url.endsWith('/health')?{provider:'mock'}:url.endsWith('/sources')?[{id:'source-one',title:'Synthetic source'}]:{id:'session-one',source_id:'source-one',deadline:'2020-01-01T00:00:00Z',ended_at:null}}));
+ vi.stubGlobal('fetch',fetcher);render(<Home/>);
+ fireEvent.click(await screen.findByRole('button',{name:'Close session'}));
+ await screen.findByRole('region',{name:'Optional Memory Check'});
+ expect(screen.getByRole('link',{name:'Start Memory Check ↗'}).getAttribute('href')).toBe('/memory?session=session-one');
+ fireEvent.click(screen.getByRole('button',{name:'Not now'}));
+ await waitFor(()=>expect(screen.queryByRole('region',{name:'Optional Memory Check'})).toBeNull());
+ expect(fetcher.mock.calls.some(([url])=>url==='/api/learning/skips')).toBe(true);
+ expect(screen.getByLabelText('Word or phrase')).toBeTruthy();
+});
+
 it.each([false,true])("persists meaning review or retains the previous choice on failure (%s)",async(fail)=>{
  let word:Occurrence={id:"one",text:"yield",source:null,context:null,created_at:"2026-01-01",status:"enriched",selected_sense_id:"s1",reviewed_at:null,enrichment:{lemma:"yield",sense_ids:["s1","s2"],selected_index:0,uncertainty:null,provenance:{provider:"mock"},meanings:["Give way.","Produce a crop."].map(definition=>({definition,translation:"пример",example:"A synthetic example.",part_of_speech:"verb",context_meaning:null,synonyms:[],antonyms:[],collocations:[],confidence:0.8}))}};
  const fetcher=vi.fn(async(url:string,options?:RequestInit)=>{

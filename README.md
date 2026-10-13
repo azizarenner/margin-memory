@@ -27,6 +27,13 @@ the graph and reviewing suggestions do not make additional AI calls.
 
 ## What is implemented
 
+- Optional [Memory Check](http://localhost:3000/memory): recognition and definition-cued
+  recall using meanings you explicitly chose. Offered after closing a session, or
+  available from navigation. Skips, assistance and uncertain alternatives are recorded
+  without inventing mastery. No AI request is made for an exercise or answer.
+- Private learning observations, immutable exercise snapshots and separate recognition/
+  recall counts in the Atlas inspector. [Evidence model and research protocol](docs/learning-evidence.md).
+
 - Responsive reading room with source creation/selection and 1–240 minute sessions.
 - Deadline-based timer restored from the API on reload; no claims of blocking other phone apps.
 - Text capture and opt-in browser speech recognition, with an always-available text fallback.
