@@ -219,6 +219,7 @@ quality, latency, data integrity and eventual learning-outcome measures.
 [Publication notes](docs/publication.md) describe the preserved Git histories and source-only publication.
 
 Repository: [azizarenner/margin-memory](https://github.com/azizarenner/margin-memory).
+Automated checks: [GitHub Actions](https://github.com/azizarenner/margin-memory/actions).
 
 ## References and license
 
