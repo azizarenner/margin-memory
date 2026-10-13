@@ -24,3 +24,27 @@ it("keeps typed input when the save fails",async()=>{
  await waitFor(()=>expect(screen.getByRole("alert").textContent).toContain("Offline"));
  expect((screen.getByLabelText("Word or phrase") as HTMLInputElement).value).toBe("yield");
 });
+
+it("shows configuration guidance and a safe failure message while retaining the capture",async()=>{
+ vi.stubGlobal("fetch",vi.fn(async(url:string)=>({ok:true,json:async()=>url.endsWith("/health")?{provider:"openai",ai_configured:false}:url.endsWith("/sources")?[]:{id:"one",text:"resilient",status:"failed",source:null,context:null,created_at:"2026-01-01T00:00:00Z",enrichment:null,can_retry:true,enrichment_error:"Your word is saved. Check your OpenAI API billing or usage limit before retrying."}})));
+ render(<Home/>);
+ await screen.findByText("AI mode needs an OpenAI API key on the server. Words can still be saved.");
+ fireEvent.change(screen.getByLabelText("Word or phrase"),{target:{value:"resilient"}});
+ fireEvent.click(screen.getByRole("button",{name:/Explain & remember/}));
+ await screen.findByText("Your word is saved. Check your OpenAI API billing or usage limit before retrying.");
+ expect(screen.getByRole("heading",{name:"resilient"})).toBeTruthy();
+ expect(screen.getByRole("button",{name:"Retry explanation"})).toBeTruthy();
+});
+
+it("offers AI enrichment for an unresolved word saved in mock mode",async()=>{
+ const retryRequest=vi.fn();
+ const word={id:"one",text:"resilient",status:"unresolved",source:null,context:null,created_at:"2026-01-01T00:00:00Z",can_retry:true,enrichment:{lemma:"resilient",meanings:[],uncertainty:"Mock vocabulary is limited.",selected_index:null,provenance:{provider:"mock"}}};
+ vi.stubGlobal("fetch",vi.fn(async(url:string)=>{
+   if(url.endsWith("/retry"))retryRequest();
+   return {ok:true,json:async()=>url.endsWith("/health")?{provider:"openai",ai_configured:true}:url.endsWith("/sources")?[]:url.endsWith("/retry")?word:[word]};
+ }));
+ render(<Home/>);await screen.findByText("AI mode · EN → RU");
+ fireEvent.click(screen.getByRole("button",{name:"Your words"}));
+ fireEvent.click(await screen.findByRole("button",{name:"Explain with AI"}));
+ await waitFor(()=>expect(retryRequest).toHaveBeenCalledTimes(1));
+});

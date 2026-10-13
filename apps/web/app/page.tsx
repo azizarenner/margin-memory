@@ -22,7 +22,7 @@ function WordCard({word,retry}:{word:Occurrence; retry:(id:string)=>void}) {
     {result?.uncertainty && <p className="note">{result.uncertainty}</p>}
     {word.context && <blockquote>{word.context}</blockquote>}
     <footer>{word.source || "Quick capture"} · {new Date(word.created_at).toLocaleDateString()}{result && ` · ${result.provenance.provider}`}</footer>
-    {["failed","pending"].includes(word.status) && <div><p className="note">Your word is saved. Its explanation is not ready.</p><button className="secondary" onClick={()=>retry(word.id)}>Retry explanation</button></div>}
+    {(word.can_retry || ["failed","pending"].includes(word.status)) && <div><p className="note">{word.enrichment_error || "Your word is saved. Its explanation is not ready."}</p><button className="secondary" onClick={()=>retry(word.id)}>{word.status === "unresolved" ? "Explain with AI" : "Retry explanation"}</button></div>}
   </article>;
 }
 export default function Home() {
@@ -52,9 +52,10 @@ export default function Home() {
     let live=true;
     async function load() {
       try {
-        const [items,health]=await Promise.all([api<Source[]>("/sources"),api<{provider:string}>("/health")]);
+        const [items,health]=await Promise.all([api<Source[]>("/sources"),api<{provider:string; ai_configured?:boolean}>("/health")]);
         if(!live) return;
         setSources(items); setSource(items[0]?.id || ""); setProvider(health.provider);
+        if(health.ai_configured === false) setError("AI mode needs an OpenAI API key on the server. Words can still be saved.");
         const saved=localStorage.getItem("margin-memory-session");
         if(saved) {
           try { const found=await api<Session>(`/sessions/${saved}`); if(live && !found.ended_at) {setSession(found);setSource(found.source_id);} }
@@ -127,8 +128,8 @@ export default function Home() {
           {voiceSupported && <button type="button" className="voice secondary" disabled={busy} onClick={startVoice}>{listening?"Stop listening":"Speak a word"}</button>}
           <p className="voice-note">{voiceSupported?"Voice starts only when you tap. Your browser may use an online speech service.":"Voice isn’t available in this browser. Text capture is always available."}</p>
           <label htmlFor="context">Original sentence <span className="muted">· optional</span></label><textarea id="context" rows={3} maxLength={2000} placeholder="A little context helps separate meanings…" value={context} onChange={e=>setContext(e.target.value)}/>
-          <button className="primary full" disabled={busy||!ready||!text.trim()}>{busy?"Saving…":"Explain & remember"}<span>↗</span></button>
-        </form><p className="panel-footnote">{provider==="mock"?"Try mitigate, alleviate, exacerbate, or yield. Other words are saved without an explanation.":"Your word and optional sentence are sent to OpenAI for enrichment."}</p>
+          <button className="primary full" disabled={busy||!ready||!text.trim()}>{busy?"Saving & explaining…":"Explain & remember"}<span>↗</span></button>
+        </form><p className="panel-footnote">{provider==="mock"?"Try mitigate, alleviate, exacerbate, or yield. Other words are saved without an explanation.":provider==="openai"?"Your word and optional sentence are sent to OpenAI for enrichment.":"Connecting to your memory…"}</p>
       </section></div>
       {latest && <section aria-live="polite" className="recent"><p className="eyebrow">JUST ADDED TO YOUR MEMORY</p><WordCard word={latest} retry={retry}/></section>}
     </> : <><section className="intro"><p className="eyebrow">YOUR PERSONAL MEMORY</p><h1>Words, with a story.</h1><p>Every encounter keeps its source and context.</p></section><div className="word-grid">{words.map(word=><WordCard key={word.id} word={word} retry={retry}/>)}</div>{busy && <p role="status">Loading your memory…</p>}{!busy && !words.length && <div className="empty"><h2>Your next word belongs here.</h2><p>Capture a word in the reading room to begin.</p></div>}{hasMore && <button className="secondary" disabled={busy} onClick={()=>void run(()=>refresh(true))}>Load older encounters</button>}</>}

@@ -55,11 +55,21 @@ reviewed allowlist and privacy checks, never auto-export the shared table.
 
 `Provider.enrich(Capture) -> Enrichment` allows another vendor adapter without
 changing persistence. Pydantic validation is performed again at the trust
-boundary. OpenAI Responses parsing uses a strict schema, a 20-second request
-timeout and up to two SDK retries for transient errors. Validation failures and
+boundary. OpenAI Responses parsing uses a strict schema, a 10-second request
+timeout and up to one SDK retry for transient errors. This is not a hard overall
+deadline; SDK retries and processing add latency. Validation failures and
 refusals are saved as failed enrichment; users retry explicitly. Logs contain
 occurrence IDs and exception types, never raw words, sentences or keys.
 Confidence is an uncalibrated model estimate, not correctness probability.
+
+Persisted error codes map to safe user guidance; raw provider error bodies never
+reach the client. Unresolved mock encounters may be enriched after switching to
+OpenAI, preserving the occurrence ID and encounter count. Completed encounters
+are not automatically regenerated. Before shared records are written, validation
+rejects the full context sentence (four or more words) appearing verbatim, ignoring
+case and punctuation, in definitions, examples or translations. This limited
+guard does not detect paraphrases, partial disclosure, or short-context reuse;
+review remains mandatory before any future public knowledge export.
 
 The mock provider is deterministic and explicitly limited. Provider selection is
 shown in the interface. Unknown mock words are unresolved, not hallucinated.

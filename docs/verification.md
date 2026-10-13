@@ -1,3 +1,26 @@
+# Real AI verification — 2026-10-13
+
+- OpenAI mode loaded a private user-configured key on the server only.
+- Live synthetic captures for `resilient` and river-context `bank` returned
+  English definitions and Russian translations in approximately 4.1 and 3.0 seconds.
+  Follow-up API reads confirmed persisted results and OpenAI provenance.
+- One initial response copied the synthetic context into its example. Added a
+  fail-closed full-sentence reuse check before shared writes, with regression
+  tests. Existing synthetic verification records were preserved. Partial reuse
+  and paraphrases remain outside this limited safeguard.
+- 29 backend tests passed on SQLite and a dedicated PostgreSQL test database.
+- 6 frontend tests, TypeScript checks and the production build passed.
+- Alembic schema drift check passed after migration `2b10af002001`.
+- Browser capture of `serendipity` returned a live explanation; reloading and
+  opening Your words confirmed the saved result. The reading session also resumed.
+- Error classification, refusal/incomplete output, private configuration status,
+  durable retry and upgrading unresolved mock captures have automated coverage.
+- No personal reading records were used for live tests. No public app was deployed.
+- Model accuracy, broad language coverage, cost at scale, real speech recognition
+  and mobile background behavior remain unverified.
+
+---
+
 # Docker verification — 2026-10-13
 
 ## Passed in the local Docker environment
@@ -21,11 +44,11 @@
 - `./scripts/dev.sh` built and started the stack and waited for all three services
   to become healthy; the page and proxied API health endpoint respond successfully.
 - Private `.env` created with a random 256-bit hexadecimal database password and
-  owner-only permissions. No real OpenAI credentials are configured or required.
+  owner-only permissions. OpenAI credentials were not required for that mock-mode run; real AI was enabled later (above).
 
 ## Remaining limits
 
-Live OpenAI enrichment, real microphone recognition, actual iOS/Android
+At that stage, live OpenAI enrichment, real microphone recognition, actual iOS/Android
 backgrounding and concurrent multi-user operation remain unverified. No public
 application was deployed. Authentication, offline capture, a graph view, curated
 OKF export, vector retrieval, GraphRAG, ADK and predictive learning remain future

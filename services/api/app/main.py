@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session
 from .db import get_db
 from .models import Source, ReadingSession, Occurrence, LearningEvent, now
 from .schemas import SourceCreate, SessionCreate, Capture
-from .memory import enrich_occurrence, fingerprint, get_or_create
+from .memory import enrich_occurrence, fingerprint, get_or_create, can_enrich
+from .errors import ERROR_MESSAGES
 from .config import settings
 
 LOCAL_USER = "00000000-0000-0000-0000-000000000001"
@@ -23,7 +24,8 @@ def occurrence_json(db, row):
     source = db.get(Source, row.source_id) if row.source_id else None
     return dict(id=row.id, text=row.original_text, context=row.context, status=row.status,
         source=source.title if source else None, source_id=row.source_id, session_id=row.session_id,
-        created_at=iso(row.created_at), enrichment=row.enrichment)
+        created_at=iso(row.created_at), enrichment=row.enrichment,
+        enrichment_error=ERROR_MESSAGES.get(row.enrichment_error), can_retry=can_enrich(row))
 def owned(db, model, id):
     row = db.get(model, str(id))
     if row is None or row.user_id != LOCAL_USER:
@@ -32,7 +34,9 @@ def owned(db, model, id):
 @app.get("/health")
 def health(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
-    return {"status":"ok", "provider":settings.ai_provider}
+    return {"status":"ok", "provider":settings.ai_provider,
+        "ai_configured":settings.ai_provider == "mock" or bool(settings.openai_api_key),
+        "model":settings.openai_model if settings.ai_provider == "openai" else None}
 @app.get("/sources")
 def sources(db: Session = Depends(get_db)):
     return [dict(id=s.id,title=s.title) for s in db.scalars(select(Source).where(Source.user_id==LOCAL_USER).order_by(Source.created_at))]
@@ -98,6 +102,6 @@ def capture(data: Capture, db: Session = Depends(get_db)):
 @app.post("/vocabulary/{id}/retry")
 def retry(id: UUID, db: Session = Depends(get_db)):
     row = owned(db, Occurrence, id)
-    if row.status in ("failed", "pending"):
+    if can_enrich(row):
         row = enrich_occurrence(db, row.id)
     return occurrence_json(db,row)

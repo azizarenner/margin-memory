@@ -6,8 +6,15 @@ Implemented: sources, sessions, persisted deadline, text and opt-in browser voic
 capture, durable encounters, OpenAI adapter, deterministic mock mode, saved words,
 lexeme/sense schema, translation records, typed relationship table, migrations,
 frontend/backend tests, CI definition and synthetic OKF examples. Verification
-limits are in verification.md. Repository publication remains an external step
-if creation credentials are unavailable. A graph view is deliberately deferred.
+limits are in verification.md. The source is published on GitHub; the application
+runs locally. A graph view is deliberately deferred.
+
+## Real AI follow-up
+
+OpenAI mode now includes private key setup, configuration status, safe error
+messages, durable retries and upgrading unresolved mock captures. Synthetic live
+English–Russian requests and saved results have been verified. Broader quality
+evaluation, latency measurement and cost controls remain work to do.
 
 ## Milestone 2 — trustworthy sense curation
 

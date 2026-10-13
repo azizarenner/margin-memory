@@ -152,13 +152,27 @@ Alembic and Uvicorn. Never put real connection credentials in documentation.
 | `OPENAI_MODEL` | Structured-output-capable model available to your account | `gpt-4o-mini` |
 | `API_INTERNAL_URL` | Next.js build-time API proxy destination | `http://127.0.0.1:8000` |
 
-For real enrichment, set `AI_PROVIDER=openai` and `OPENAI_API_KEY` in the root
-`.env` for Compose, then recreate the API container. For non-Docker development,
+For real enrichment, obtain an API key from your OpenAI API account, then run:
+
+```sh
+python3 scripts/configure-openai.py
+./scripts/dev.sh
+```
+
+The helper prompts without displaying the key, preserves your database password,
+and enables OpenAI in the ignored root `.env`. API usage is billed separately
+from ChatGPT. The interface shows AI mode; configuration, access, quota and
+temporary errors leave the word saved with a retry button. Previously unresolved
+mock words can be explained using **Explain with AI** without another encounter.
+
+For non-Docker development,
 export these variables in the API terminal or place them in an ignored
 `services/api/.env`. The root `.env` is not automatically loaded by that command.
 Only the captured text and optional context are sent to OpenAI; source titles and
 reading history are not sent. `store=False` is requested. Provider data policies
-still apply. No live paid API call was made during initial verification.
+still apply. Live English–Russian explanations and persistence were verified on
+2026-10-13 using synthetic text. These checks do not establish translation quality
+across arbitrary words. Generated meanings and relationships remain unverified.
 
 Speech recognition starts only on a button tap and stops after a result or error.
 Availability depends on browser, secure context and microphone permission; a

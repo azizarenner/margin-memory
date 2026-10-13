@@ -1,7 +1,7 @@
 export type Source = {id:string; title:string};
 export type Session = {id:string; source_id:string; deadline:string; ended_at:string|null};
 export type Meaning = {definition:string; translation:string; example:string; part_of_speech:string; context_meaning:string|null; synonyms:string[]; antonyms:string[]; collocations:string[]; confidence:number};
-export type Occurrence = {id:string; text:string; context:string|null; source:string|null; created_at:string; status:string; enrichment:null|{lemma:string; meanings:Meaning[]; uncertainty:string|null; selected_index:number|null; provenance:{provider:string}}};
+export type Occurrence = {id:string; text:string; context:string|null; source:string|null; created_at:string; status:string; enrichment_error?:string|null; can_retry?:boolean; enrichment:null|{lemma:string; meanings:Meaning[]; uncertainty:string|null; selected_index:number|null; provenance:{provider:string}}};
 export function secondsRemaining(deadline:string, current=Date.now()) {
   return Math.max(0, Math.ceil((Date.parse(deadline)-current)/1000));
 }

@@ -114,5 +114,5 @@ def test_openai_adapter_uses_validated_schema_and_private_input(monkeypatch):
     assert result==expected
     assert seen["store"] is False
     assert seen["text_format"] is Enrichment
-    assert seen["timeout"]==20.0 and seen["max_retries"]==2
+    assert seen["timeout"]==10.0 and seen["max_retries"]==1
     assert "session_id" not in seen["input"]
