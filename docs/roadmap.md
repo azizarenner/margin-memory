@@ -7,7 +7,7 @@ capture, durable encounters, OpenAI adapter, deterministic mock mode, saved word
 lexeme/sense schema, translation records, typed relationship table, migrations,
 frontend/backend tests, CI definition and synthetic OKF examples. Verification
 limits are in verification.md. The source is published on GitHub; the application
-runs locally. A graph view is deliberately deferred.
+runs locally. The initial Semantic Atlas graph view is now implemented.
 
 ## Real AI follow-up
 
@@ -20,6 +20,11 @@ evaluation, latency measurement and cost controls remain work to do.
 
 Implemented: manual per-encounter meaning selection, changing/clearing the choice,
 and persisted reader review distinct from the original provider suggestion.
+
+Atlas foundation and initial visualization also implemented: evidence-bearing
+typed assertions, multidimensional classification storage, overlapping domain
+projection, reader-scoped graph API, and Network/Clusters/Orbit exploration.
+See [the Atlas plan](semantic-atlas.md) for its five separate research milestones.
 
 Next: reviewed sense reconciliation, relationship candidate
 resolution, sense-level progress, richer examples and a simple graph view. Exit

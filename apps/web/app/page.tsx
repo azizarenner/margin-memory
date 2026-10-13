@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { api, clock, secondsRemaining, type Source, type Session, type Occurrence } from "../lib/memory";
 
@@ -115,7 +116,7 @@ export default function Home() {
   function retry(id:string) {void run(async()=>{const word=await api<Occurrence>(`/vocabulary/${id}/retry`,{});if(latest?.id===id)setLatest(word);if(tab==="words")await refresh();});}
   return <main>
     <header className="masthead"><a className="brand" href="/">m<span className="brand-dot">.</span> <span>Margin Memory</span></a><span className="eyebrow">A little reading. A lasting memory.</span></header>
-    <nav aria-label="Main navigation"><button aria-current={tab==="read"?"page":undefined} onClick={()=>setTab("read")}>Reading room</button><button aria-current={tab==="words"?"page":undefined} onClick={()=>{setTab("words");void run(()=>refresh());}}>Your words</button><span className="mode">{provider ? `${provider === "mock" ? "Sample" : "AI"} mode · EN → RU` : "Connecting…"}</span></nav>
+    <nav aria-label="Main navigation"><button aria-current={tab==="read"?"page":undefined} onClick={()=>setTab("read")}>Reading room</button><button aria-current={tab==="words"?"page":undefined} onClick={()=>{setTab("words");void run(()=>refresh());}}>Your words</button><Link href="/atlas" style={{fontSize:13,color:"inherit",textDecoration:"none"}}>Semantic Atlas ↗</Link><span className="mode">{provider ? `${provider === "mock" ? "Sample" : "AI"} mode · EN → RU` : "Connecting…"}</span></nav>
     {error && <div role="alert" className="error">{error}</div>}
     {tab==="read" ? <>
       <section className="intro"><p className="eyebrow">YOUR READING ROOM</p><h1>Stay with the story.</h1><p>Keep the words you meet along the way.</p></section>

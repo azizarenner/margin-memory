@@ -1,3 +1,38 @@
+# Semantic Atlas foundation and initial visualization — 2026-10-13
+
+- 37 backend tests passed on SQLite and the isolated PostgreSQL test database.
+  Atlas coverage includes reader isolation, private-context exclusion, bounded
+  results, distinct senses, evidence/type validation, symmetric deduplication,
+  directional hypernyms, rejection, classification hierarchy and deterministic fixtures.
+- 13 frontend tests passed, including graph filtering, neighborhoods, path
+  traversal, explicit relationship submission, demo edit isolation and load errors.
+- TypeScript and the Docker production build passed. Existing capture/review tests
+  remain green. All three local services are healthy.
+- Migration `4d32ca004003` adds four tables without replacing existing data.
+  Alembic schema drift check passed.
+- Browser checks: actual WebGL display of the personal graph; demonstration with
+  486 nodes / 1,722 edges; canvas selection and connection emphasis; Network,
+  domain-based Clusters, Orbit, domain filtering (81 Engineering nodes), search,
+  node provenance/details and a path through actual visible links.
+- Inspected the user-supplied visual reference and implemented original black
+  constellation styling, curved coloured links, degree-scaled small points, hub
+  halos and Off/Key/All names. Read-only reference content was not imported.
+- Five sequential local HTTP reads per endpoint: personal graph 80 nodes/77 edges,
+  median 18.4 ms and maximum 200.5 ms; demo median 69.2 ms and maximum 416.9 ms.
+  These small local measurements include proxy/JSON handling, not GPU frame time,
+  concurrent load, or evidence of large-corpus scalability.
+- The current in-app viewport (770 × 774) was visually inspected, including
+  collapsed/expanded panels. A requested viewport override was not reflected by
+  the browser; separate desktop/mobile device dimensions remain unverified.
+
+No new paid enrichment requests were required. No real corpus import, semantic
+accuracy benchmark, community algorithm, mastery model, memory prediction,
+GraphRAG retrieval, or agent workflow is claimed. Full research plan and current
+limitations: [Semantic Atlas](semantic-atlas.md). Browser testing does not establish
+an FPS target or exhaustive accessibility compliance.
+
+---
+
 # Sense selection and review — 2026-10-13
 
 - 32 backend tests passed on SQLite and a dedicated PostgreSQL database. New

@@ -12,6 +12,11 @@ not a hosted service. See [verification](docs/verification.md) for checks actual
 run and current limits. GraphRAG, personalized learning and a production OKF
 exporter are future work.
 
+The **Semantic Atlas foundation** is also implemented: open
+[the Atlas](http://localhost:3000/atlas) from the reading-room navigation. It has
+WebGL Network, domain-grouped Clusters, and one/two-hop Orbit views over real
+reader-scoped data. See [ontology, architecture and research plan](docs/semantic-atlas.md).
+
 ## What is implemented
 
 - Responsive reading room with source creation/selection and 1–240 minute sessions.
@@ -22,6 +27,10 @@ exporter are future work.
 - Saved encounters with definitions, translations, candidate meanings, context and source.
 - Meaning review: confirm a candidate for one encounter, change it, or clear the
   choice. Reader choices are distinguished from unreviewed provider suggestions.
+- Semantic Atlas: distinct sense/lexeme/domain/collocation nodes, search, filters,
+  node details, zoom/pan, paths, and evidence-bearing reader-created sense links.
+- A separate reproducible 486-node demonstration. Its topology is synthetic and
+  never inserted into your reading history. It demonstrates scale, not accuracy.
 - Lexemes separated from senses, multilingual translation records, typed relationship schema.
 - Alembic migrations, backend integration tests, frontend tests, CI and synthetic OKF examples.
 
@@ -146,6 +155,21 @@ Alembic and Uvicorn. Never put real connection credentials in documentation.
    for that encounter and marked **Your chosen meaning**. Choose another meaning
    to change it, or **Clear choice — I’m unsure** to leave it undecided. Reviewing
    a meaning makes no AI request and does not alter other encounters or shared definitions.
+7. Open **Semantic Atlas**. Select a meaning to inspect its source and candidate
+   classifications. Choose a target, relationship type and evidence to save a
+   reviewed connection. Rejected connections retain their evidence but leave the
+   visible graph. On narrower screens, **Index** and **Details** open the panels.
+8. Select the **Demonstration** collection to explore hundreds of synthetic nodes.
+   Use Network / Clusters / Orbit, the name controls and zoom/reset buttons.
+   **Refresh** retrieves newly captured vocabulary. No Atlas operation calls AI.
+
+Domain grouping is not community detection. Node size shows connectivity, not
+importance or mastery. The Atlas does not yet predict forgetting, assign CEFR,
+infer knowledge gaps, import WordNet, or implement Memory/Evolution/Frontier views.
+Reduced-motion settings stop force animation; the node index remains usable if
+WebGL is unavailable. The full-screen visual direction was informed by the
+user-supplied [BL00D.MONEY reference](https://bl00d.money/), using original code and
+Margin Memory data, without importing that site's content or assets.
 
 ## Configuration
 

@@ -99,7 +99,8 @@ available. No audio is stored by this application.
 `semantic_relationships` stores sense-to-sense IDs, type, review status and
 provenance. Candidate word strings remain in enrichment JSON until a resolver
 can identify the target sense and a review policy can accept the edge. The MVP
-has no graph mutation API or graph view. `USED_IN` is reserved; domain concepts
+now has a reader-scoped Atlas and owned relationship assertions described in
+[Semantic Atlas](semantic-atlas.md). `USED_IN` is reserved; domain concepts
 need a dedicated concept table before this relation is actively used.
 
 Future retrieval contract: `retrieve(user_id, query, language, limit)` returns
