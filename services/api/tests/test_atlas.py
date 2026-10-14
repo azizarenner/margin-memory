@@ -53,6 +53,7 @@ def test_overview_counts_captures_not_senses_and_includes_unresolved_words(clien
     for word in ('yield','YIELD','unlisted-synthetic-word'):
         http.post('/vocabulary',json=payload(word,source_id=source['id']))
     overview=http.get('/atlas?limit=1').json()['overview']
+    assert overview.pop('patterns')['current'] == 3
     assert overview==dict(captures=3,forms=2,repeated=[dict(text='yield',captures=2)],
         sources=[dict(title='Synthetic article',captures=3)])
     # Foreign captures must not leak into totals or repeat/source rankings.
@@ -61,7 +62,9 @@ def test_overview_counts_captures_not_senses_and_includes_unresolved_words(clien
         for row in db.scalars(select(Occurrence)):
             row.user_id=other.id
         db.commit()
-    assert http.get('/atlas').json()['overview']==dict(captures=0,forms=0,repeated=[],sources=[])
+    empty = http.get('/atlas').json()['overview']
+    assert empty.pop('patterns')['current'] == 0
+    assert empty==dict(captures=0,forms=0,repeated=[],sources=[])
 
 def test_graph_projects_senses_without_fabricating_synonym_edges_or_private_context(client,monkeypatch):
     from app import memory

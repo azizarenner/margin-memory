@@ -12,6 +12,7 @@ from .models import (Sense, Lexeme, Candidate, Occurrence, Translation, Classifi
     Domain, DomainParent, SemanticAssertion, Relationship, Source)
 from .schemas import StrictModel
 from .memory import get_or_create
+from .reading_patterns import reading_patterns
 
 router = APIRouter(prefix='/atlas', tags=['Semantic Atlas'])
 LOCAL_USER = '00000000-0000-0000-0000-000000000001'
@@ -53,7 +54,7 @@ def capture_overview(db):
         .join(Occurrence, Occurrence.source_id == Source.id)
         .where(owned, Source.user_id == LOCAL_USER).group_by(Source.id, Source.title)
         .order_by(func.count(Occurrence.id).desc(), Source.title, Source.id).limit(5))
-    return dict(captures=captures, forms=forms,
+    return dict(captures=captures, forms=forms, patterns=reading_patterns(db, LOCAL_USER),
         repeated=[dict(text=text, captures=count) for text,count in repeats],
         sources=[dict(title=title, captures=count) for title,count in sources])
 
@@ -105,7 +106,7 @@ def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, evolutio
                         nodes[nid]=node(nid,value,kind,status='proposed',provenance=provenance)
                     if dimension=='domain' and value not in n['domains']: n['domains'].append(value)
                     eid=f'{relation}:{sid}:{nid}'
-                    add_edge(edge(eid,sid,nid,relation,'proposed','Unreviewed provider classification',provenance))
+                    add_edge(edge(eid,sid,nid,relation,'proposed','Suggested topic' if dimension == 'domain' else 'Suggested phrase',provenance))
     domain_rows={d.id:d for d in db.scalars(select(Domain))}
     for c in db.scalars(select(Classification).where(Classification.sense_id.in_(ids),Classification.status != 'rejected').order_by(Classification.id)):
         nodes[c.sense_id]['classifications'].append(dict(dimension=c.dimension,value=c.value,

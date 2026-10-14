@@ -1,7 +1,8 @@
+import type {Patterns} from '../app/atlas/ReadingPatterns';
 export type AtlasNode = {first_capture_date?:string;learning?:MemoryEvidence;id:string;label:string;kind:string;domains:string[];definition?:string;example?:string;language?:string;part_of_speech?:string;status:string;knowledge?:string;encounters?:number;reviewed_encounters?:number;translations?:{language:string;text:string}[];provenance:Record<string,unknown>;classifications:{dimension:string;value:string;status:string;evidence:string;confidence:number|null;provenance:Record<string,unknown>}[]};
 export type AtlasEdge = {id:string;source:string;target:string;kind:string;status:string;evidence:string;confidence:number|null;provenance:Record<string,unknown>};
 export type AtlasSuggestion = Pick<AtlasEdge,'id'|'source'|'target'|'kind'|'evidence'|'provenance'>;
-export type AtlasData = {dataset:string;overview?:{captures:number;forms:number;repeated:{text:string;captures:number}[];sources:{title:string;captures:number}[]};nodes:AtlasNode[];edges:AtlasEdge[];suggestions?:AtlasSuggestion[];notice:string;truncated:boolean;history_truncated:boolean};
+export type AtlasData = {dataset:string;overview?:{patterns?:Patterns;captures:number;forms:number;repeated:{text:string;captures:number}[];sources:{title:string;captures:number}[]};nodes:AtlasNode[];edges:AtlasEdge[];suggestions?:AtlasSuggestion[];notice:string;truncated:boolean;history_truncated:boolean};
 export function relationshipLabel(kind:string){return ({SYNONYM_OF:'Similar meaning',ANTONYM_OF:'Opposite meaning',RELATED_TO:'Related meaning',HYPERNYM_OF:'Broader meaning',MORPHOLOGICALLY_RELATED_TO:'Word family',BELONGS_TO_DOMAIN:'Topic',HAS_SENSE:'Meaning of word',PART_OF_COLLOCATION:'Used in phrase',SUBDOMAIN_OF:'Subtopic'} as Record<string,string>)[kind]||kind;}
 export type AtlasMode = 'network'|'clusters'|'orbit'|'memory'|'evolution';
 export function evolutionGraph(data:AtlasData,through:string){

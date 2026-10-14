@@ -38,3 +38,5 @@
 .atlas-disclosure{border-top:1px solid #293122;margin:18px 0;padding-top:12px}.atlas-disclosure summary{cursor:pointer;color:#b8c2a9;font-size:11px;line-height:1.6}.atlas-disclosure[open]>summary{margin-bottom:16px}.atlas-disclosure summary:focus-visible{outline:2px solid #dfeb72;outline-offset:4px}
 
 .context-trail{margin:24px 0}.context-trail-list{list-style:none;padding:0}.context-trail .atlas-inline{margin-top:12px}.context-trail blockquote{margin:10px 0}
+
+.atlas-inspector table{width:100%;border-collapse:collapse;font-size:12px;margin:12px 0}.atlas-inspector caption{text-align:left;margin-bottom:8px}.atlas-inspector th,.atlas-inspector td{text-align:left;padding:7px 4px;border-bottom:1px solid #343c2c;overflow-wrap:anywhere}.atlas-inspector th{font-weight:500}

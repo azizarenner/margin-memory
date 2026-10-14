@@ -358,3 +358,7 @@ Automated checks: [GitHub Actions](https://github.com/azizarenner/margin-memory/
 - [Canonical OKF specification](https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md): v0.2 reviewed before producing the sample bundle.
 
 MIT licensed. Contributions should include focused tests and honest documentation.
+
+### Reading patterns
+
+Atlas → Reading patterns shows capture totals and suggested topics for the last 30 days versus the previous 30 days (UTC). Topics that meet lists up to three topic pairs attached to the same selected meaning in saved explanations, with example captured words. Different possible meanings are never combined into a bridge. Automatic meaning selections are included; unresolved captures remain in totals but not topic counts. Topic coverage is shown explicitly, labels can overlap, and these are reading activity counts, not proficiency or learning gains. The projection uses at most the latest 10,000 captures in 60 days and labels partial results. Changing a selected meaning can change this summary; it is not an immutable history of classifications. No extra AI requests, reviews, or database changes are required. “Suggested topic” replaces the technical “Unreviewed provider classification” label.
