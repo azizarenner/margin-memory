@@ -30,7 +30,7 @@ it('allows skipping without recording a failed answer',async()=>{
 it('explains insufficient vocabulary without blocking return to reading',async()=>{
  vi.stubGlobal('fetch',vi.fn(async()=>({ok:false,json:async()=>({detail:'Choose a meaning for at least one saved word first.'})})));
  render(<MemoryCheck/>);fireEvent.click(screen.getByRole('button',{name:'Try recall'}));
- await screen.findByRole('alert');expect(screen.getByRole('link',{name:/Return to reading/})).toBeTruthy();
+  await screen.findByRole('alert');expect(screen.getByRole('link',{name:/Back to reading/})).toBeTruthy();
 });
 it('retries the identical submission after a network error',async()=>{
  const fetcher=setup();let failed=false;

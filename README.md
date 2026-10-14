@@ -1,13 +1,13 @@
 # Margin Memory
 
-AI-powered personal semantic memory for language learning, combining knowledge graphs, contextual vocabulary capture, and agentic AI to turn unfamiliar words into active vocabulary.
+A reading companion for capturing unfamiliar words and exploring the patterns between them.
 
 Reading in another language should not mean choosing between staying with a
 story and remembering new vocabulary. Margin Memory combines a quiet reading
 timer, fast word capture, and contextual explanations with a durable record of
 where each word was encountered. English → Russian is the first supported pair.
 
-**Status: milestone 1, local single-user MVP.** This is a functional application,
+**Status: local single-user application with vocabulary capture and an analytical Atlas.** This is a functional application,
 not a hosted service. See [verification](docs/verification.md) for checks actually
 run and current limits. GraphRAG, personalized learning and a production OKF
 exporter are future work.
@@ -27,6 +27,18 @@ the graph and reviewing suggestions do not make additional AI calls.
 
 ## What is implemented
 
+- The main flow is **read → capture an unfamiliar word → explore your Atlas**.
+  Practice is optional, available from the reading-room footer; finishing a session
+  does not assign a review or record a skipped exercise.
+- Atlas opens on repeat captures and reading sources, with Network and Topics as
+  its primary views. Totals cover all your captures, including unenriched words,
+  independently of the bounded graph. Distinct forms ignore case and outer spaces;
+  inflections remain separate. Top-five repeats/sources describe reading activity,
+  not proficiency. Graph topics are suggested classifications of meanings.
+- Advanced filters, timeline, practice history, provenance and connection editing
+  remain available behind disclosures. No previous captures or practice records
+  are deleted by this simplification.
+
 - Assessment quality checks exclude known synonym distractors. A reproducible
   synthetic [grading benchmark](docs/assessment-quality.md) compares rule versions.
 - [Private check history](http://localhost:3000/memory/history) lets you report
@@ -34,8 +46,8 @@ the graph and reviewing suggestions do not make additional AI calls.
   the attempt from derived success/failure counts; they do not assign a new grade.
 
 - Optional [Memory Check](http://localhost:3000/memory): recognition and definition-cued
-  recall using meanings you explicitly chose. Offered after closing a session, or
-  available from navigation. Skips, assistance and uncertain alternatives are recorded
+  recall using meanings you explicitly chose. Available only when you choose to practice.
+  Skips within an exercise, assistance and uncertain alternatives are recorded
   without inventing mastery. No AI request is made for an exercise or answer.
 - Private learning observations, immutable exercise snapshots and separate recognition/
   recall counts in the Atlas inspector. [Evidence model and research protocol](docs/learning-evidence.md).
@@ -290,14 +302,18 @@ historical graph. See [Evolution semantics and limits](docs/evolution.md).
 ## Prompted writing
 
 Optional [prompted writing](docs/writing-practice.md) is available at `/writing`.
-It preserves original sentences, checks target-form presence locally, and offers
-a five-part reader self-review. Semantic/grammatical quality remains ungraded.
+It preserves original sentences and checks target-form presence locally.
+There is no self-review form. Older reflections remain accessible inside collapsed
+writing history. Semantic/grammatical quality remains ungraded.
 An unlabeled synthetic review packet and comparison tool support future independent
 adjudication; no independent validation result is claimed.
 
 ## Next milestones
 
-See [roadmap](docs/roadmap.md). Planned work includes reviewed sense linking,
+The product priority is useful analysis of unfamiliar vocabulary with minimal
+reader effort. Practice remains optional; research milestones must not add required
+reviews, daily goals or proficiency claims to the reading flow.
+See [roadmap](docs/roadmap.md) for the longer-term research backlog, including reviewed sense linking,
 curated OKF export, pgvector-backed hybrid retrieval, bounded GraphRAG, Google
 ADK tools, AI-evaluated vocabulary activation, predictive retention models, reading
 recommendations and BigQuery Graph experiments. None are claimed as implemented.

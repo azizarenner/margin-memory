@@ -14,7 +14,9 @@ contains the target too. Unsupported inflections may be missed. Meaning, grammar
 collocation, register and naturalness are not automatically evaluated. There is no
 provider call, correctness grade, memory prediction or spontaneous-use inference.
 
-An optional five-dimension self-review records `unsure`, `looks_right` or
+The simplified UI no longer asks for self-review. Previously saved reflections
+remain readable inside the collapsed writing history. The compatibility API for
+five-dimension self-review still records `unsure`, `looks_right` or
 `needs_work`, plus optional context/concerns. Ratings are reader impressions, not
 gold labels or independent adjudication. Reviews are kept unchanged after saving;
 changed second submissions conflict, while identical retries are idempotent.

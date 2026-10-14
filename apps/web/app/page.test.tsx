@@ -5,16 +5,15 @@ import Home from "./page";
 import type { Occurrence } from "../lib/memory";
 afterEach(()=>{cleanup();vi.unstubAllGlobals();localStorage.clear();});
 
-it('offers an optional check after closing a session and records a skip without blocking reading',async()=>{
+it('closes a session without assigning a review or recording a skipped exercise',async()=>{
  localStorage.setItem('margin-memory-session','session-one');
  const fetcher=vi.fn(async(url:string)=>({ok:true,json:async()=>url.endsWith('/health')?{provider:'mock'}:url.endsWith('/sources')?[{id:'source-one',title:'Synthetic source'}]:{id:'session-one',source_id:'source-one',deadline:'2020-01-01T00:00:00Z',ended_at:null}}));
  vi.stubGlobal('fetch',fetcher);render(<Home/>);
  fireEvent.click(await screen.findByRole('button',{name:'Close session'}));
- await screen.findByRole('region',{name:'Optional Memory Check'});
- expect(screen.getByRole('link',{name:'Start Memory Check ↗'}).getAttribute('href')).toBe('/memory?session=session-one');
- fireEvent.click(screen.getByRole('button',{name:'Not now'}));
- await waitFor(()=>expect(screen.queryByRole('region',{name:'Optional Memory Check'})).toBeNull());
- expect(fetcher.mock.calls.some(([url])=>url==='/api/learning/skips')).toBe(true);
+ await screen.findByRole('button',{name:/Begin reading/});
+ expect(screen.queryByRole('region',{name:'Optional Memory Check'})).toBeNull();
+ expect(screen.getByRole('link',{name:'Practice a word · optional ↗'}).getAttribute('href')).toBe('/memory');
+ expect(fetcher.mock.calls.some(([url])=>url==='/api/learning/skips')).toBe(false);
  expect(screen.getByLabelText('Word or phrase')).toBeTruthy();
 });
 

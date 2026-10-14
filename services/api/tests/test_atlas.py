@@ -4,6 +4,22 @@ from app.models import Occurrence, User, Domain, DomainParent, Classification, S
 from app.providers import MockProvider
 from test_memory import payload, count
 
+def test_overview_counts_captures_not_senses_and_includes_unresolved_words(client):
+    http,factory=client
+    source=http.post('/sources',json={'title':'Synthetic article'}).json()
+    for word in ('yield','YIELD','unlisted-synthetic-word'):
+        http.post('/vocabulary',json=payload(word,source_id=source['id']))
+    overview=http.get('/atlas?limit=1').json()['overview']
+    assert overview==dict(captures=3,forms=2,repeated=[dict(text='yield',captures=2)],
+        sources=[dict(title='Synthetic article',captures=3)])
+    # Foreign captures must not leak into totals or repeat/source rankings.
+    with factory() as db:
+        other=User(name='Other synthetic reader');db.add(other);db.flush()
+        for row in db.scalars(select(Occurrence)):
+            row.user_id=other.id
+        db.commit()
+    assert http.get('/atlas').json()['overview']==dict(captures=0,forms=0,repeated=[],sources=[])
+
 def test_graph_projects_senses_without_fabricating_synonym_edges_or_private_context(client,monkeypatch):
     from app import memory
     http,_=client

@@ -1,8 +1,21 @@
 # Roadmap
 
+## Product direction — reading first
+
+Margin Memory is a reading companion and analytical map of vocabulary the reader
+saved as unfamiliar. The main flow is reading, capture, and exploration. Recall
+and writing are optional tools, not a curriculum. Avoid required reviews, daily
+targets, proficiency dashboards and self-rating forms.
+
+The Atlas now opens on repeat captures and reading sources, with topics and
+meaning connections on the map. Research tools live behind optional disclosures.
+Near-term work should improve the usefulness and clarity of these patterns;
+the research milestones below are a backlog, not a commitment to add every
+mechanism to the main interface.
+
 ## Learning evidence — implemented bounded slice
 
-Private prompt snapshots and append-only observations; optional post-reading
+Private prompt snapshots and append-only observations; user-initiated optional
 recognition and definition-cued recall; conservative local grading with abstention;
 separate recognition/recall summaries in Atlas details. See
 [the evidence model and evaluation protocol](learning-evidence.md).
@@ -13,7 +26,8 @@ Next: independently adjudicated recall-grading fixtures and cue/distractor quali
 review. Evolution now provides dated activity and a capture-date filter on current
 meanings; historical relationship reconstruction remains unimplemented.
 Prompted writing now preserves sentences, limited local form feedback and a
-separate five-part self-review. An unlabeled synthetic review packet supports
+historical five-part self-reviews (new self-review forms have been removed).
+An unlabeled synthetic review packet supports
 future independent adjudication; semantic quality evaluation is not implemented.
 Calibrated FSRS estimates and exposure-aware practice ranking remain research stages.
 

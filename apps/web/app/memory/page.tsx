@@ -28,20 +28,20 @@ export default function MemoryCheck(){
  }
  return <main>
   <header className="masthead"><Link className="brand" href="/">Margin Memory</Link><Link href="/atlas">Explore your Atlas ↗</Link></header>
-  <section className="intro"><p className="eyebrow">OPTIONAL · PRIVATE · NO AI REQUEST</p><h1>Memory Check</h1><p>A small observation, not a score of who you are.</p></section>
+  <section className="intro"><p className="eyebrow">OPTIONAL PRACTICE</p><h1>Revisit a word.</h1><p>A little recall or a sentence, whenever it helps.</p></section>
   <section className="panel" style={{maxWidth:720,margin:'0 auto 40px'}} aria-label="Memory Check">
-   <p>Practice meanings you have chosen in Your words. Recognition and recall are recorded separately. You can leave at any time.</p>
+   <p>Practice meanings you have chosen in Your words. There is no daily target or required review.</p>
    {session&&<p className="note">This check draws targets from the reading session you just finished. Recognition options may use other chosen vocabulary.</p>}
    {error&&<p role="alert" className="error">{error}</p>}
    <p><Link href="/writing">Try optional sentence writing ↗</Link></p>
-   <p><Link href="/memory/history">Review past checks and reported issues ↗</Link></p>
+   <p><Link href="/memory/history">Past attempts ↗</Link></p>
    {!question||result?<>
-    {result&&<div role="status" className="meaning"><h2>{result.flag?'Disputed result — original grade preserved':result.kind==='REVIEW_SKIPPED'?'Skipped':result.outcome==='correct'?'A successful attempt':result.outcome==='uncertain'?'Uncertain — no judgment':'Not retrieved on this attempt'}</h2><p><strong>{result.target}</strong> — {result.definition}</p><p>{result.feedback}</p><p className="note">One success is evidence of this attempt, not permanent mastery. Prompted recall is not spontaneous use.</p></div>}
+    {result&&<div role="status" className="meaning"><h2>{result.flag?'Disputed result — original grade preserved':result.kind==='REVIEW_SKIPPED'?'Skipped':result.outcome==='correct'?'A successful attempt':result.outcome==='uncertain'?'Uncertain — no judgment':'Not retrieved on this attempt'}</h2><p><strong>{result.target}</strong> — {result.definition}</p><p>{result.feedback}</p><p className="note">You can stop here or try another word.</p></div>}
     <h2>{result?'Another check?':'Choose a check'}</h2>
     {result?.id&&result.kind!=='REVIEW_SKIPPED'&&<ObservationReview id={result.id} flag={result.flag} onFlag={flag=>setResult(old=>old?{...old,flag}:old)}/>}
-    <p>Recognition: choose a meaning in context. Needs at least three chosen words with the same part of speech and distinct options that pass quality checks.</p>
+    <p>Choose a meaning from a few options. Available when there are enough distinct meanings saved.</p>
     <button className="secondary" disabled={busy} onClick={()=>void start('recognition')}>Try recognition</button>
-    <p>Recall: retrieve the English word from its definition, without seeing the word first.</p>
+    <p>Remember a word from its definition.</p>
     <button className="primary" disabled={busy} onClick={()=>void start('recall')}>Try recall</button>
    </>:<>
     <p className="eyebrow">{question.kind==='recall'?'DEFINITION-CUED RECALL':'RECOGNITION'}</p><h2>{question.prompt.instruction}</h2><blockquote>{question.prompt.clue}</blockquote>
@@ -53,7 +53,7 @@ export default function MemoryCheck(){
     <div className="durations" style={{marginTop:16}}><button className="secondary" disabled={busy||!!pending} onClick={()=>void submit('dont_know')}>I don’t know</button><button className="secondary" disabled={busy||!!pending} onClick={()=>void submit('uncertain')}>Question unclear</button><button className="secondary" disabled={busy||!!pending} onClick={()=>void submit('skip')}>Skip this check</button></div>
     <p className="note">{question.prompt.assistance} {question.prompt.source}. Answers are saved locally; uncertain alternatives are not marked wrong.</p>
    </>}
-   <p><Link href="/">Return to reading — no check required ↗</Link></p>
+   <p><Link href="/">Back to reading ↗</Link></p>
   </section>
  </main>;
 }

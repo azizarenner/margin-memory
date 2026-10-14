@@ -1,4 +1,21 @@
-# Prompted writing and self-review — 2026-10-14
+# Reading-first simplification — 2026-10-14
+
+- 62 backend tests passed on SQLite and isolated PostgreSQL. New coverage verifies
+  capture-level totals, repeated forms, source counts, unenriched words, graph
+  truncation independence and reader isolation.
+- 32 frontend tests passed, including session completion without review prompts,
+  no automatic skip observation, collapsed advanced tools and retained historical
+  reflections. TypeScript and the Docker production build passed.
+- Disposable mock browser verification confirmed the Atlas overview (three captures,
+  two distinct forms, one repeated word), meaning inspection, reading-first navigation,
+  and writing save/reload without a self-review form. Personal data was not used for
+  test writes. Local Compose services are healthy at localhost:3000.
+- No schema changes or data deletion. Practice and prior reviews remain stored;
+  old review APIs remain compatible. No live AI request was needed for this change.
+- These are descriptive capture analytics, not estimates of knowledge or memory.
+  Graph projection limits remain in force; capture totals cover the full collection.
+
+# Prompted writing and self-review — 2026-10-14 (earlier implementation)
 
 - 61 backend tests passed on SQLite and isolated PostgreSQL, including migration
   round trips, reader isolation, frozen responses, idempotent retries, review

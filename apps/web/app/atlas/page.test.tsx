@@ -11,9 +11,21 @@ function setup(fail=false){
  const fetcher=vi.fn(async(url:string,options?:RequestInit)=>({ok:!fail,json:async()=>options?.method==='POST'?{id:'edge',status:'reviewed'}:url.includes('/senses/')?{occurrences:[]}:url.endsWith('/demo')?{...data,dataset:'demo',notice:'Synthetic demonstration'}:data}));
  vi.stubGlobal('fetch',fetcher);return fetcher;
 }
+it('opens on capture patterns while keeping optional tools collapsed',async()=>{
+ const fetcher=setup();
+ fetcher.mockImplementation(async()=>({ok:true,json:async()=>({...data,overview:{captures:4,forms:3,repeated:[{text:'yield',captures:2}],sources:[{title:'Synthetic reading',captures:3}]}})}));
+ render(<Atlas/>);
+ await screen.findByRole('heading',{name:'What keeps coming up?'});
+ expect(screen.getByText('yield')).toBeTruthy();
+ expect(screen.getByText(/Synthetic reading/)).toBeTruthy();
+ expect(screen.queryByRole('button',{name:'Accept connection'})).toBeNull();
+ expect(screen.getByText('More filters & views').closest('details')?.open).toBe(false);
+ expect(screen.queryByRole('button',{name:'MEMORY'})).toBeNull();
+});
 it('inspects a meaning and writes an explicit relationship with evidence',async()=>{
  const fetcher=setup();render(<Atlas/>);await screen.findByText('2 visible nodes');
  fireEvent.click(screen.getByRole('button',{name:/^Inspect mitigate/}));
+ fireEvent.click(screen.getByText('Trace or edit connections'));
  fireEvent.change(screen.getByLabelText('Trace a path to'),{target:{value:'b'}});
  fireEvent.change(screen.getByLabelText('Why does this connection hold?'),{target:{value:'Both describe reducing severity in this synthetic example.'}});
  fireEvent.click(screen.getByRole('button',{name:'Save reviewed connection'}));
@@ -22,9 +34,11 @@ it('inspects a meaning and writes an explicit relationship with evidence',async(
 });
 it('keeps demonstration data explicit and unavailable for personal edits',async()=>{
  setup();render(<Atlas/>);await screen.findByText('2 visible nodes');
+ fireEvent.click(screen.getByText('More filters & views'));
  fireEvent.change(screen.getByLabelText('Collection'),{target:{value:'demo'}});
  await screen.findByText('Synthetic demonstration');
  fireEvent.click(screen.getByRole('button',{name:/^Inspect mitigate/}));
+ fireEvent.click(screen.getByText('About this meaning & its sources'));
  expect(screen.queryByRole('button',{name:'Save reviewed connection'})).toBeNull();
  expect(screen.getByText('No learner history')).toBeTruthy();
 });
@@ -41,6 +55,8 @@ it('reviews a suggestion only after showing both meanings',async()=>{
   return {ok:true,json:async()=>({...data,suggestions:reviewed?[]:[suggestion]})};
  });
  render(<Atlas/>);await screen.findByText('Possible similar meaning');
+ expect(screen.getByText(/Suggested connections ·/).closest('details')?.open).toBe(false);
+ fireEvent.click(screen.getByText(/Suggested connections ·/));
  expect(screen.getByText('Stored explanation candidate.')).toBeTruthy();
  fireEvent.click(screen.getByRole('button',{name:'Accept connection'}));
  await waitFor(()=>expect(fetcher).toHaveBeenCalledWith('/api/atlas/suggestions/suggestion/review',expect.objectContaining({body:JSON.stringify({status:'reviewed'})})));

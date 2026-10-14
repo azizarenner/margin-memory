@@ -40,6 +40,23 @@ def require_sense(db, id):
         raise HTTPException(404, 'Meaning not found in your memory')
     return sense
 
+def capture_overview(db):
+    """Count encounters, never candidate senses; include unenriched captures."""
+    owned = Occurrence.user_id == LOCAL_USER
+    form = func.lower(func.trim(Occurrence.original_text))
+    captures, forms = db.execute(select(func.count(Occurrence.id),
+        func.count(func.distinct(form))).where(owned)).one()
+    repeats = db.execute(select(form, func.count(Occurrence.id).label('captures'))
+        .where(owned).group_by(form).having(func.count(Occurrence.id) > 1)
+        .order_by(func.count(Occurrence.id).desc(), form).limit(5))
+    sources = db.execute(select(Source.title, func.count(Occurrence.id))
+        .join(Occurrence, Occurrence.source_id == Source.id)
+        .where(owned, Source.user_id == LOCAL_USER).group_by(Source.id, Source.title)
+        .order_by(func.count(Occurrence.id).desc(), Source.title, Source.id).limit(5))
+    return dict(captures=captures, forms=forms,
+        repeated=[dict(text=text, captures=count) for text,count in repeats],
+        sources=[dict(title=title, captures=count) for title,count in sources])
+
 @router.get('')
 def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, evolution: bool = False, db: Session = Depends(get_db)):
     rows = list(db.execute(select(Sense, Lexeme).join(Lexeme).where(Sense.id.in_(visible_senses()))
@@ -130,9 +147,9 @@ def graph(limit: int = Query(500, ge=1, le=1000), memory: bool = False, evolutio
         for id,stamp in first_captures:
             stamp=stamp.replace(tzinfo=timezone.utc) if stamp.tzinfo is None else stamp.astimezone(timezone.utc)
             nodes[id]['first_capture_date']=stamp.date().isoformat()
-    return dict(dataset='personal',suggestions=suggestions,nodes=list(nodes.values()),edges=list(edges.values()),
+    return dict(dataset='personal',overview=capture_overview(db),suggestions=suggestions,nodes=list(nodes.values()),edges=list(edges.values()),
         truncated=truncated,history_truncated=history_truncated,
-        notice='Private local graph. Candidate senses are not demonstrated knowledge. No recall probabilities are estimated.')
+        notice='Built from words you saved as unfamiliar. Possible meanings and topic links may be AI suggestions; this is not a proficiency score.')
 
 class AssertionCreate(StrictModel):
     from_sense_id: UUID
