@@ -237,3 +237,9 @@ def context_trail(id: UUID, offset: int = Query(0, ge=0),
             meaning=definition, meaning_status=('chosen' if o.reviewed_at else 'suggested')
                 if o.selected_sense_id else 'unresolved',
             matches_selected_meaning=o.selected_sense_id==str(id)) for o,title,definition in rows])
+
+@router.get('/senses/{id}/language')
+def word_language(id: UUID, db: Session = Depends(get_db)):
+    from .atlas_language import language_details
+    sense=require_sense(db,id)
+    return language_details(db,sense,LOCAL_USER)

@@ -8,7 +8,7 @@ afterEach(()=>{cleanup();vi.unstubAllGlobals();vi.restoreAllMocks();});
 const data:AtlasData={dataset:'personal',notice:'Private test graph',truncated:false,history_truncated:false,nodes:['a','b'].map((id,i)=>({id,label:i?'alleviate':'mitigate',kind:'WordSense',domains:['Engineering'],status:'proposed',provenance:{provider:'mock'},classifications:[],definition:'Synthetic definition.'})),edges:[]};
 function setup(fail=false){
  vi.stubGlobal('matchMedia',()=>({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn()}));
- const fetcher=vi.fn(async(url:string,options?:RequestInit)=>({ok:!fail,json:async()=>options?.method==='POST'?{id:'edge',status:'reviewed'}:url.includes('/senses/')?{occurrences:[]}:url.endsWith('/demo')?{...data,dataset:'demo',notice:'Synthetic demonstration'}:data}));
+ const fetcher=vi.fn(async(url:string,options?:RequestInit)=>({ok:!fail,json:async()=>options?.method==='POST'?{id:'edge',status:'reviewed'}:url.endsWith('/language')?{family:[],family_total:0,family_source:'Princeton WordNet 3.0',phrases:[],phrase_total:0,history_truncated:false}:url.includes('/senses/')?{occurrences:[]}:url.endsWith('/demo')?{...data,dataset:'demo',notice:'Synthetic demonstration'}:data}));
  vi.stubGlobal('fetch',fetcher);return fetcher;
 }
 it('opens on capture patterns while keeping optional tools collapsed',async()=>{

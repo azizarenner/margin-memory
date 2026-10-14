@@ -1,3 +1,22 @@
+# Word families and phrases — 2026-10-14
+
+- 68 backend tests passed on SQLite and isolated PostgreSQL. Coverage includes
+  explicit dictionary derivations, unknown words/POS, whole-word phrase matching,
+  case/space normalization, suggestion provenance, reader isolation, non-mutating
+  reads and excluding phrase evidence with a different reader-chosen meaning.
+- 37 frontend tests, TypeScript and the Docker production build passed. Tests
+  cover the collapsed disclosure, reading/suggested phrase labels and retry.
+- Disposable mock browser verification showed dictionary relatives for `mitigate`,
+  `mitigate risk` with its saved sentence/source, and `mitigate harm` separately
+  labeled as a suggestion. The dictionary lookup also passed in the built image.
+- WordNet's source archive checksum was verified before extraction. The generated
+  public reference includes 25,882 entries and 55,199 directional derivations;
+  its original license accompanies the modified extraction. No personal data is
+  included in that reference, and no AI calls or personal test writes were made.
+- No schema changes. Dictionary senses remain unaligned to AI senses; family
+  coverage is limited to explicit WordNet derivations. Phrases are stored
+  candidates, not exhaustive text extraction or corpus-frequency claims.
+
 # Reading-source menu cleanup — 2026-10-14
 
 - Excluded the two exact legacy verification titles from new-session choices;

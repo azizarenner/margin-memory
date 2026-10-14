@@ -27,6 +27,15 @@ the graph and reviewing suggestions do not make additional AI calls.
 
 ## What is implemented
 
+- **Word families & phrases:** one optional disclosure beside an Atlas meaning.
+  Dictionary relatives use explicit WordNet derivational links; expanding a
+  relative shows the reference meanings. These are word/POS-level suggestions,
+  not automatic matches to the selected AI sense or new graph edges. Phrases
+  come from saved explanation snapshots for the selected meaning. Exact matches
+  in private saved sentences are shown separately from unobserved suggestions.
+  No new AI request, practice task, or automatic vocabulary addition is made.
+  See [reference provenance and limits](docs/word-families.md).
+
 - **Context trails:** select a meaning in the personal Atlas to compare captures
   of the same dictionary word across sources, dates and meanings. Original
   sentences stay private. Each capture distinguishes a reader-chosen meaning,

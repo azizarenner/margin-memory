@@ -10,5 +10,7 @@ dependencies = ["fastapi==0.143.0", "pydantic==2.14.1", "sqlalchemy==2.1.4", "al
 dev = ["pytest==9.1.1", "httpx==0.28.1", "PyYAML>=6,<7"]
 [tool.setuptools.packages.find]
 include = ["app*"]
+[tool.setuptools.package-data]
+app = ["reference/*.json.gz", "reference/*.txt"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
