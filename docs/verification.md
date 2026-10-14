@@ -1,3 +1,34 @@
+# Verification history
+
+Entries below are dated observations, newest first. Older limitations describe
+the application at that time and may have been resolved by later entries.
+
+## Current baseline — 2026-10-14
+
+- Published application commit: 40affc8 (demonstration copy cleanup).
+- GitHub checks passed for 40affc8, ffaef3c and 6a3671b. The latest baseline run:
+  [Checks](https://github.com/azizarenner/margin-memory/actions/runs/38620410931).
+- Reading-pattern work passed 70 backend tests on SQLite and isolated PostgreSQL,
+  39 frontend tests, TypeScript checks and a Docker production build.
+- The demonstration copy follow-up passed 70 SQLite backend tests, 39 frontend
+  tests, TypeScript and the Docker production build; GitHub also passed its
+  PostgreSQL job.
+- Local browser inspection confirmed capture-period comparisons, topic coverage
+  and shared-topic examples in the Atlas. No private test records were added.
+- Current limitations: no authentication/public hosting, native iPhone app,
+  offline capture, etymology, validated retention prediction or proven learning
+  benefit. Microphone/device behavior and broad translation quality remain
+  unverified. Historical sections below are retained as an audit trail.
+
+## Reading patterns — 2026-10-14
+
+Capture counts compare the last 30 days with the previous 30 days in UTC.
+Topics come from saved explanations for currently selected meanings; unresolved
+captures remain in totals. Topic labels overlap and coverage is explicit.
+Up to five topics and three shared-topic pairs are shown. Queries use at most
+10,000 recent captures and flag partial counts. Changing a meaning selection can
+change the summary; it is not an immutable classification history.
+
 # Word families and phrases — 2026-10-14
 
 - 68 backend tests passed on SQLite and isolated PostgreSQL. Coverage includes

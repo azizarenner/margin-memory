@@ -13,6 +13,21 @@ Near-term work should improve the usefulness and clarity of these patterns;
 the research milestones below are a backlog, not a commitment to add every
 mechanism to the main interface.
 
+## Next practical improvements
+
+Implemented: context trails, WordNet-derived word families, saved phrase evidence,
+and reading-pattern summaries across two 30-day windows.
+
+Proposed next, without adding required tasks to reading:
+- Browse the Atlas by reading source and explain each connection clearly.
+- Normalize duplicate topic labels while retaining their original provenance.
+- Investigate licensed etymological references separately from morphology.
+- Evaluate private iPhone web-app access and a separate public sample demo.
+
+These are proposals, not shipped features or a release schedule. Personal
+reading experiments should separate usefulness and motivation from measured
+retention gains. The longer-term milestones below remain a research backlog.
+
 ## Learning evidence — implemented bounded slice
 
 Private prompt snapshots and append-only observations; user-initiated optional
@@ -25,8 +40,7 @@ guards, private dispute history, and an Atlas Memory view of observed evidence.
 Next: independently adjudicated recall-grading fixtures and cue/distractor quality
 review. Evolution now provides dated activity and a capture-date filter on current
 meanings; historical relationship reconstruction remains unimplemented.
-Prompted writing now preserves sentences, limited local form feedback and a
-historical five-part self-reviews (new self-review forms have been removed).
+Prompted writing now preserves sentences, limited local form feedback and historical five-part self-reviews (new self-review forms have been removed).
 An unlabeled synthetic review packet supports
 future independent adjudication; semantic quality evaluation is not implemented.
 Calibrated FSRS estimates and exposure-aware practice ranking remain research stages.
