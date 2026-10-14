@@ -28,4 +28,4 @@ def fixture():
                 edges.append(edge(f'cross-{nid}',nid,f'demo-{(group+1)%6}-{(i+19)%80}','RELATED_TO','synthetic','Synthetic cross-domain topology',prov))
         edges.append(edge(f'bridge-{group}',f'demo-{group}-0',f'demo-{(group+1)%6}-0','RELATED_TO','synthetic','Synthetic bridge for interaction testing',prov))
     return dict(dataset='demo',nodes=nodes,edges=edges,truncated=False,history_truncated=False,
-        notice='DEMONSTRATION · 480 synthetic sense specimens. Connections, groups and labels illustrate the interface, not verified language knowledge. No learner history.')
+        notice='Demonstration')
