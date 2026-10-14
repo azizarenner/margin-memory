@@ -36,3 +36,5 @@
 .atlas-evolution-controls input{width:100%;box-sizing:border-box}.atlas-evolution-controls p{line-height:1.5;margin:10px 0}.atlas-evolution-controls dl>div{display:flex;justify-content:space-between;gap:6px}.atlas-evolution-controls dd{margin:0}.atlas-evolution-controls .atlas-inline{flex-wrap:wrap}.atlas-evolution-controls button{margin-top:8px}
 
 .atlas-disclosure{border-top:1px solid #293122;margin:18px 0;padding-top:12px}.atlas-disclosure summary{cursor:pointer;color:#b8c2a9;font-size:11px;line-height:1.6}.atlas-disclosure[open]>summary{margin-bottom:16px}.atlas-disclosure summary:focus-visible{outline:2px solid #dfeb72;outline-offset:4px}
+
+.context-trail{margin:24px 0}.context-trail-list{list-style:none;padding:0}.context-trail .atlas-inline{margin-top:12px}.context-trail blockquote{margin:10px 0}

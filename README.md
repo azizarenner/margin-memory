@@ -27,6 +27,15 @@ the graph and reviewing suggestions do not make additional AI calls.
 
 ## What is implemented
 
+- **Context trails:** select a meaning in the personal Atlas to compare captures
+  of the same dictionary word across sources, dates and meanings. Original
+  sentences stay private. Each capture distinguishes a reader-chosen meaning,
+  an unconfirmed suggestion, and no selected meaning. Browse older captures in
+  pages of 20. Totals cover all linked captures, not just the current page.
+  Source variety is a count, not a semantic-diversity or learning score; captures
+  without an assigned dictionary word are not part of these trails. Refresh the
+  Atlas to refresh an open trail. No new AI calls or schema changes are required.
+
 - The main flow is **read → capture an unfamiliar word → explore your Atlas**.
   Practice is optional, available from the reading-room footer; finishing a session
   does not assign a review or record a skipped exercise.
@@ -101,6 +110,14 @@ The frontend has a pnpm lockfile. Backend direct dependencies are pinned;
 transitive Python dependencies are not yet locked across platforms.
 
 ## Run with Docker Compose
+
+Docker runs the application and database; it is independent of the AI provider.
+`mock` uses fixed sample explanations for testing, while `openai` uses the configured
+API key. The Atlas's **Example graph · invented data** is a separate demonstration
+collection. The reading room's source menu lists saved book/article titles, not
+runtime or AI modes. Older verification titles may remain in an existing local
+database; add your own reading title below the menu. New sessions do not
+automatically select the first saved source.
 
 Prerequisites: start Docker Desktop (or Docker Engine with Compose v2+).
 On a fresh checkout, Python 3 is used only to generate a private `.env` file using

@@ -5,6 +5,15 @@ import Home from "./page";
 import type { Occurrence } from "../lib/memory";
 afterEach(()=>{cleanup();vi.unstubAllGlobals();localStorage.clear();});
 
+it('does not automatically select an old reading source',async()=>{
+ vi.stubGlobal('fetch',vi.fn(async(url:string)=>({ok:true,json:async()=>url.endsWith('/health')?{provider:'mock'}:[{id:'sample',title:'Synthetic test source'}]})));
+ render(<Home/>);await screen.findByText('Sample mode · EN → RU');
+ expect((screen.getByLabelText('What are you reading?') as HTMLSelectElement).value).toBe('');
+ expect((screen.getByRole('button',{name:/Begin reading/}) as HTMLButtonElement).disabled).toBe(true);
+ fireEvent.change(screen.getByLabelText('What are you reading?'),{target:{value:'sample'}});
+ expect((screen.getByRole('button',{name:/Begin reading/}) as HTMLButtonElement).disabled).toBe(false);
+});
+
 it('closes a session without assigning a review or recording a skipped exercise',async()=>{
  localStorage.setItem('margin-memory-session','session-one');
  const fetcher=vi.fn(async(url:string)=>({ok:true,json:async()=>url.endsWith('/health')?{provider:'mock'}:url.endsWith('/sources')?[{id:'source-one',title:'Synthetic source'}]:{id:'session-one',source_id:'source-one',deadline:'2020-01-01T00:00:00Z',ended_at:null}}));

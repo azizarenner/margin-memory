@@ -4,6 +4,49 @@ from app.models import Occurrence, User, Domain, DomainParent, Classification, S
 from app.providers import MockProvider
 from test_memory import payload, count
 
+def test_context_trail_spans_meanings_and_sources_without_inventing_choices(client):
+    http,_=client
+    source=http.post('/sources',json={'title':'Synthetic traffic article'}).json()
+    a=http.post('/vocabulary',json=payload('yield',source_id=source['id'],context='Drivers yield at the crossing.')).json()
+    b=http.post('/vocabulary',json=payload('yield',context='The yield increased this year.')).json()
+    first,second=a['enrichment']['sense_ids'][:2]
+    http.post('/vocabulary/'+a['id']+'/selection',json={'sense_id':first})
+    http.post('/vocabulary/'+b['id']+'/selection',json={'sense_id':second})
+    c=http.post('/vocabulary',json=payload('yield')).json()
+    trail=http.get('/atlas/senses/'+first+'/trail?limit=2').json()
+    assert (trail['total'],trail['source_count'],trail['chosen_meaning_count'])==(3,1,2)
+    assert trail['has_more'] and len(trail['occurrences'])==2
+    assert trail['occurrences'][0]['id']==c['id']
+    assert trail['occurrences'][0]['meaning_status']=='unresolved'
+    assert trail['occurrences'][0]['context'] is None
+    assert trail['occurrences'][1]['meaning_status']=='chosen'
+    assert not trail['occurrences'][1]['matches_selected_meaning']
+    older=http.get('/atlas/senses/'+first+'/trail?limit=2&offset=2').json()
+    assert not older['has_more'] and older['occurrences'][0]['id']==a['id']
+    assert older['occurrences'][0]['source']=='Synthetic traffic article'
+    assert older['occurrences'][0]['context']=='Drivers yield at the crossing.'
+    assert older['first_capture'].endswith('+00:00')
+    http.post('/vocabulary/'+c['id']+'/selection',json={'sense_id':None})
+    assert http.get('/atlas/senses/'+first+'/trail').json()['occurrences'][0]['meaning_status']=='unresolved'
+    single=http.post('/vocabulary',json=payload('mitigate')).json()
+    suggested=http.get('/atlas/senses/'+single['enrichment']['sense_ids'][0]+'/trail').json()
+    assert suggested['chosen_meaning_count']==0
+    assert suggested['occurrences'][0]['meaning_status']=='suggested'
+
+def test_context_trail_excludes_foreign_encounters_of_shared_word(client):
+    http,factory=client
+    a=http.post('/vocabulary',json=payload('yield')).json()
+    b=http.post('/vocabulary',json=payload('yield',context='Foreign synthetic context.')).json()
+    sid=a['enrichment']['sense_ids'][0]
+    with factory() as db:
+        other=User(name='Other test reader');db.add(other);db.flush()
+        db.get(Occurrence,b['id']).user_id=other.id;db.commit()
+    result=http.get('/atlas/senses/'+sid+'/trail')
+    assert result.json()['total']==1 and 'Foreign synthetic context.' not in result.text
+    assert http.get('/atlas/senses/'+str(uuid4())+'/trail').status_code==404
+    assert http.get('/atlas/senses/'+sid+'/trail?offset=-1').status_code==422
+    assert http.get('/atlas/senses/'+sid+'/trail?limit=51').status_code==422
+
 def test_overview_counts_captures_not_senses_and_includes_unresolved_words(client):
     http,factory=client
     source=http.post('/sources',json={'title':'Synthetic article'}).json()

@@ -58,7 +58,7 @@ export default function Home() {
       try {
         const [items,health]=await Promise.all([api<Source[]>("/sources"),api<{provider:string; ai_configured?:boolean}>("/health")]);
         if(!live) return;
-        setSources(items); setSource(items[0]?.id || ""); setProvider(health.provider);
+        setSources(items); setProvider(health.provider);
         if(health.ai_configured === false) setError("AI mode needs an OpenAI API key on the server. Words can still be saved.");
         const saved=localStorage.getItem("margin-memory-session");
         if(saved) {
@@ -124,6 +124,7 @@ export default function Home() {
         <div className="row"><h2>{session?"A moment to read":"Make space for reading"}</h2><span className="small-mark">01</span></div>
         {!session ? <>
           <label htmlFor="source">What are you reading?</label><select id="source" value={source} onChange={e=>setSource(e.target.value)}><option value="">Choose a reading source</option>{sources.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select>
+          <p className="note">Your saved book and article titles. Add a new title below.</p>
           <form className="source-form" onSubmit={e=>{e.preventDefault();void run(async()=>{const s=await api<Source>("/sources",{title:newTitle.trim()});setSources(await api<Source[]>("/sources"));setSource(s.id);setNewTitle("");});}}><label className="sr-only" htmlFor="new-source">New source title</label><input id="new-source" placeholder="Add a book or other source" maxLength={240} value={newTitle} onChange={e=>setNewTitle(e.target.value)}/><button className="secondary" disabled={busy||!ready||!newTitle.trim()}>Add</button></form>
           <label>How long would you like to read?</label><div className="durations">{[5,10,15,30,60].map(n=><button key={n} aria-pressed={minutes===n} className="secondary" onClick={()=>setMinutes(n)}>{n}m</button>)}</div>
           <label className="custom">Custom minutes <input aria-label="Custom minutes" type="number" min={1} max={240} value={minutes} onChange={e=>setMinutes(Number(e.target.value))}/></label>

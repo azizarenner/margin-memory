@@ -1,3 +1,18 @@
+# Context trails — 2026-10-14
+
+- 64 backend tests passed on SQLite and isolated PostgreSQL. Trail tests cover
+  cross-meaning history, totals independent of pagination, source counts, missing
+  contexts, suggested/chosen/unresolved meanings and exclusion of foreign captures.
+- 35 frontend tests and TypeScript passed. Docker production build passed and
+  local Compose services are healthy. No migration or data deletion was needed.
+- Isolated mock browser verification showed two original sentences for `yield`
+  from two synthetic reading sources, with two distinct reader-chosen meanings.
+  The personal reading room was checked read-only: it remains in OpenAI mode,
+  and its source menu no longer automatically selects an old verification title.
+- Trails use the existing dictionary-word identity. Unlinked captures are not
+  included; source counts do not estimate semantic diversity or learning. No
+  new remote enrichment calls were made during verification.
+
 # Reading-first simplification — 2026-10-14
 
 - 62 backend tests passed on SQLite and isolated PostgreSQL. New coverage verifies

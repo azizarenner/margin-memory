@@ -210,3 +210,30 @@ def sense_details(id:UUID,db:Session=Depends(get_db)):
 def demo():
     from .atlas_demo import fixture
     return fixture()
+
+@router.get('/senses/{id}/trail')
+def context_trail(id: UUID, offset: int = Query(0, ge=0),
+                  limit: int = Query(20, ge=1, le=50), db: Session = Depends(get_db)):
+    """Private encounters across the lexeme's meanings; no inference of learning."""
+    sense = require_sense(db, id)
+    owned = (Occurrence.user_id == LOCAL_USER, Occurrence.lexeme_id == sense.lexeme_id)
+    total, sources, first, last = db.execute(select(func.count(Occurrence.id),
+        func.count(func.distinct(Occurrence.source_id)), func.min(Occurrence.created_at),
+        func.max(Occurrence.created_at)).where(*owned)).one()
+    chosen = db.scalar(select(func.count(func.distinct(Occurrence.selected_sense_id)))
+        .where(*owned, Occurrence.reviewed_at.is_not(None)))
+    rows = db.execute(select(Occurrence, Source.title, Sense.definition)
+        .outerjoin(Source, (Occurrence.source_id == Source.id) & (Source.user_id == LOCAL_USER))
+        .outerjoin(Sense, Occurrence.selected_sense_id == Sense.id).where(*owned)
+        .order_by(Occurrence.created_at.desc(), Occurrence.id.desc()).offset(offset).limit(limit)).all()
+    def stamp(value):
+        if value is None: return None
+        return (value.replace(tzinfo=timezone.utc) if value.tzinfo is None
+                else value.astimezone(timezone.utc)).isoformat()
+    return dict(total=total, source_count=sources, chosen_meaning_count=chosen,
+        first_capture=stamp(first), last_capture=stamp(last),
+        has_more=offset+len(rows)<total, occurrences=[dict(id=o.id, text=o.original_text,
+            context=o.context, source=title, created_at=stamp(o.created_at),
+            meaning=definition, meaning_status=('chosen' if o.reviewed_at else 'suggested')
+                if o.selected_sense_id else 'unresolved',
+            matches_selected_meaning=o.selected_sense_id==str(id)) for o,title,definition in rows])
