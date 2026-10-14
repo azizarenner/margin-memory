@@ -3,6 +3,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { api, clock, secondsRemaining, type Source, type Session, type Occurrence } from "../lib/memory";
 
+// Legacy setup fixtures remain in history, but are not choices for new reading.
+const setupSourceTitles=new Set(['Docker verification — synthetic reading','Synthetic real AI verification']);
+
 type Speech = {lang:string; continuous:boolean; interimResults:boolean; onresult:((event:{results:{[key:number]:{[key:number]:{transcript:string}}}})=>void)|null; onerror:((event:{error:string})=>void)|null; onend:(()=>void)|null; start:()=>void; abort:()=>void};
 type SpeechConstructor = new()=>Speech;
 declare global { interface Window { SpeechRecognition?:SpeechConstructor; webkitSpeechRecognition?:SpeechConstructor } }
@@ -32,6 +35,7 @@ function WordCard({word,retry,select,busy}:{word:Occurrence; retry:(id:string)=>
 export default function Home() {
   const [tab,setTab]=useState<"read"|"words">("read");
   const [sources,setSources]=useState<Source[]>([]);
+  const readingSources=sources.filter(s=>!setupSourceTitles.has(s.title));
   const [source,setSource]=useState("");
   const [newTitle,setNewTitle]=useState("");
   const [minutes,setMinutes]=useState(15);
@@ -123,13 +127,12 @@ export default function Home() {
       <div className="reading-grid"><section className="panel focus-panel" aria-label="Reading session">
         <div className="row"><h2>{session?"A moment to read":"Make space for reading"}</h2><span className="small-mark">01</span></div>
         {!session ? <>
-          <label htmlFor="source">What are you reading?</label><select id="source" value={source} onChange={e=>setSource(e.target.value)}><option value="">Choose a reading source</option>{sources.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select>
-          <p className="note">Your saved book and article titles. Add a new title below.</p>
+          {readingSources.length>0?<><label htmlFor="source">What are you reading?</label><select id="source" value={source} onChange={e=>setSource(e.target.value)}><option value="">Choose a reading source</option>{readingSources.map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select><p className="note">Your saved book and article titles. Add a new title below.</p></>:<p>What are you reading? Add your first book or article below.</p>}
           <form className="source-form" onSubmit={e=>{e.preventDefault();void run(async()=>{const s=await api<Source>("/sources",{title:newTitle.trim()});setSources(await api<Source[]>("/sources"));setSource(s.id);setNewTitle("");});}}><label className="sr-only" htmlFor="new-source">New source title</label><input id="new-source" placeholder="Add a book or other source" maxLength={240} value={newTitle} onChange={e=>setNewTitle(e.target.value)}/><button className="secondary" disabled={busy||!ready||!newTitle.trim()}>Add</button></form>
           <label>How long would you like to read?</label><div className="durations">{[5,10,15,30,60].map(n=><button key={n} aria-pressed={minutes===n} className="secondary" onClick={()=>setMinutes(n)}>{n}m</button>)}</div>
           <label className="custom">Custom minutes <input aria-label="Custom minutes" type="number" min={1} max={240} value={minutes} onChange={e=>setMinutes(Number(e.target.value))}/></label>
-          <button className="primary full" disabled={busy||!ready||!source||!Number.isInteger(minutes)||minutes<1||minutes>240} onClick={()=>void run(async()=>{const s=await api<Session>("/sessions",{source_id:source,minutes});setSession(s);localStorage.setItem("margin-memory-session",s.id);})}>Begin reading <span>→</span></button>
-        </> : <div className="active-session"><p>{sources.find(s=>s.id===session.source_id)?.title}</p><div className="timer" role="timer" aria-label="Time remaining">{clock(seconds)}</div><p aria-live="polite">{seconds>0?"One page at a time.":"Your reading time is complete. Take a breath."}</p><button className="secondary" disabled={busy} onClick={()=>void run(async()=>{await api(`/sessions/${session.id}/end`,{});setSession(null);localStorage.removeItem("margin-memory-session");})}>{seconds>0?"Finish session":"Close session"}</button></div>}
+          <button className="primary full" disabled={busy||!ready||!readingSources.some(s=>s.id===source)||!Number.isInteger(minutes)||minutes<1||minutes>240} onClick={()=>void run(async()=>{const s=await api<Session>("/sessions",{source_id:source,minutes});setSession(s);localStorage.setItem("margin-memory-session",s.id);})}>Begin reading <span>→</span></button>
+        </> : <div className="active-session"><p>{sources.find(s=>s.id===session.source_id)?.title}</p><div className="timer" role="timer" aria-label="Time remaining">{clock(seconds)}</div><p aria-live="polite">{seconds>0?"One page at a time.":"Your reading time is complete. Take a breath."}</p><button className="secondary" disabled={busy} onClick={()=>void run(async()=>{await api(`/sessions/${session.id}/end`,{});setSession(null);if(setupSourceTitles.has(sources.find(s=>s.id===source)?.title||""))setSource("");localStorage.removeItem("margin-memory-session");})}>{seconds>0?"Finish session":"Close session"}</button></div>}
         <p className="panel-footnote">Your timer follows a saved deadline, even when you leave this page.</p>
       </section>
       <section className="panel capture-panel" aria-label="Word capture"><div className="row"><h2>A word worth keeping</h2><span className="small-mark">02</span></div><p className="muted">A quick meaning, then back to your book.</p>

@@ -115,8 +115,9 @@ Docker runs the application and database; it is independent of the AI provider.
 `mock` uses fixed sample explanations for testing, while `openai` uses the configured
 API key. The Atlas's **Example graph · invented data** is a separate demonstration
 collection. The reading room's source menu lists saved book/article titles, not
-runtime or AI modes. Older verification titles may remain in an existing local
-database; add your own reading title below the menu. New sessions do not
+runtime or AI modes. The two legacy setup-verification titles are excluded from the new-session menu,
+while their history remains stored. If there are no real sources yet, the app
+asks for your first book/article title instead of showing an empty menu. New sessions do not
 automatically select the first saved source.
 
 Prerequisites: start Docker Desktop (or Docker Engine with Compose v2+).

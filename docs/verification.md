@@ -1,3 +1,13 @@
+# Reading-source menu cleanup — 2026-10-14
+
+- Excluded the two exact legacy verification titles from new-session choices;
+  stored sources and linked history are unchanged. With no real sources yet,
+  the reading room presents the title-entry field without an empty dropdown.
+- 35 frontend tests, TypeScript and the Docker production build passed. Browser
+  verification after source loading confirmed neither test title nor the source
+  dropdown is visible in the current empty real-source collection. OpenAI mode
+  remains enabled. No database migration or deletion was performed.
+
 # Context trails — 2026-10-14
 
 - 64 backend tests passed on SQLite and isolated PostgreSQL. Trail tests cover
